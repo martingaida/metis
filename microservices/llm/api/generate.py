@@ -1,6 +1,6 @@
 # /api/generate.py
 from flask import Blueprint, request, jsonify
-from services.openai_service import generate_text
+from services.openai import generate_text
 
 # Blueprint for the API routes
 generate_api = Blueprint('generate_api', __name__)
