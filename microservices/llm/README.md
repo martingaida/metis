@@ -12,7 +12,7 @@ def explain_concept(concept, complexity_level):
         # If more depth is required, generate Layer 2 and Layer 3 explanations
         if complexity_level > 1:
             deeper_explanation = generate_layered_explanation(chunk, complexity_level=2)
-            print(deeper_explanation)
+            print(deeper_explanation) 
         
         if complexity_level > 2:
             deepest_explanation = generate_layered_explanation(chunk, complexity_level=3)
