@@ -30,6 +30,7 @@ Parameters:
   OpenAIApiKey:
     Type: String
     Description: OpenAI API Key
+    NoEcho: true
 
 Outputs:
   LLMApi:

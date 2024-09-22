@@ -4,10 +4,10 @@ from pathlib import Path
 import os
 
 # Get the parent directory path
-parent_dir = Path(__file__).resolve().parent.parent
+microservices_root_dir = Path(__file__).resolve().parent.parent.parent
 
 # Load the .env file from the parent directory
-load_dotenv(dotenv_path=parent_dir / ".env")
+load_dotenv(dotenv_path=microservices_root_dir / ".env")
 
 # Set up Open AI client
 client = OpenAI()
