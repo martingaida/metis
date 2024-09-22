@@ -10,7 +10,6 @@ parent_dir = Path(__file__).resolve().parent.parent
 # Load the .env file from the parent directory
 load_dotenv(dotenv_path=parent_dir / '.env')
 
-
 def generate_response():
     # Set up Open AI client
     client = OpenAI()
