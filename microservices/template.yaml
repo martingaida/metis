@@ -23,19 +23,8 @@ Resources:
         Variables:
           PYTHONPATH: ./
           OPENAI_API_KEY: !Ref OpenAIApiKey
-
-  PythonRequirementsLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-      LayerName: python-requirements
-      Description: Python Dependencies
-      ContentUri: llm/
-      CompatibleRuntimes:
-        - python3.9
     Metadata:
-      BuildMethod: python-pip
-      BuildArchitecture: x86_64
-      Requirements: llm/requirements.txt
+      BuildMethod: python3.9
 
 Parameters:
   OpenAIApiKey:
