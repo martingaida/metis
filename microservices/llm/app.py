@@ -1,17 +1,22 @@
-# /app.py
-from flask import Flask
-from api.generate import generate_api
-import os
-from dotenv import load_dotenv
+import json
+from handlers import explain
 
-# Load environment variables
-load_dotenv()
 
-app = Flask(__name__)
+def lambda_handler(event, context):
+    try:
+        # Extract text input from the POST request body
+        body = json.loads(event['body'])
+        text = body.get('text', '')
 
-# Register the blueprint
-app.register_blueprint(generate_api)
+        # Call Explanation handler
+        result = explain.generate_response(text)
 
-if __name__ == "__main__":
-    port = os.getenv("PORT", 5000)
-    app.run(host="0.0.0.0", port=port, debug=True)
+        return {
+            'statusCode': 200,
+            'body': json.dumps(result)
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': str(e)})
+        }
