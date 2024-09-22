@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Metis Microservices
+
+Globals:
+  Function:
+    Timeout: 900
+    Runtime: python3.9
+
+Resources:
+  LLMFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: llm/
+      Handler: app.lambda_handler
+      Events:
+        LLMApi:
+          Type: Api
+          Properties:
+            Path: /microservices/llm
+            Method: post
+      Environment:
+        Variables:
+          PYTHONPATH: ./
+          OPENAI_API_KEY: !Ref OpenAIApiKey
+
+  PythonRequirementsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: python-requirements
+      Description: Python Dependencies
+      ContentUri: llm/
+      CompatibleRuntimes:
+        - python3.9
+    Metadata:
+      BuildMethod: python-pip
+      BuildArchitecture: x86_64
+      Requirements: llm/requirements.txt
+
+Parameters:
+  OpenAIApiKey:
+    Type: String
+    Description: OpenAI API Key
+
+Outputs:
+  LLMApi:
+    Description: "API Gateway endpoint URL for LLM function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/microservices/llm/"
+  LLMFunction:
+    Description: "LLM Lambda Function ARN"
+    Value: !GetAtt LLMFunction.Arn
