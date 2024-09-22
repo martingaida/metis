@@ -22,7 +22,7 @@ Resources:
       Environment:
         Variables:
           PYTHONPATH: ./
-          OPENAI_API_KEY: !Ref OpenAIApiKey
+          OPENAI_API_KEY: '{{resolve:ssm:/metis/OPENAI_API_KEY:1}}'
     Metadata:
       BuildMethod: python3.9
 
