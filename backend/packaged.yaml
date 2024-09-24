@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  LLMServiceUrl:
+    Type: String
+    Description: URL for the LLM microservice
+Resources:
+  BackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: main
+      Runtime: provided.al2
+      CodeUri: s3://metis-backend-w8ej736hj9/88346a4288a01793450ce9ac538e3ecb
+      MemorySize: 128
+      Timeout: 900
+      Environment:
+        Variables:
+          LLM_MICROSERVICE_URL:
+            Ref: LLMServiceUrl
+      Events:
+        ExplainApi:
+          Type: Api
+          Properties:
+            Path: /api/explain
+            Method: post
+    Metadata:
+      SamResourceId: BackendFunction
+Outputs:
+  BackendApiUrl:
+    Description: API Gateway endpoint URL for the backend
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/explain
