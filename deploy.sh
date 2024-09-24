@@ -62,6 +62,10 @@ deploy_frontend() {
         fi
     
     if [ -n "$S3_BUCKET" ]; then
+        # Clear existing contents of the S3 bucket
+        echo "Clearing existing contents of S3 bucket..."
+        aws s3 rm s3://$S3_BUCKET --recursive
+        
         # Configure bucket for static website hosting
         aws s3 website s3://$S3_BUCKET --index-document index.html --error-document index.html
 
@@ -80,7 +84,7 @@ deploy_frontend() {
         }"
 
         # Sync built files to S3
-        aws s3 sync dist/frontend s3://$S3_BUCKET --delete
+        aws s3 sync dist/frontend/browser s3://$S3_BUCKET --delete
 
         # Output the website URL
         echo "Frontend deployed to: http://$S3_BUCKET.s3-website-us-east-1.amazonaws.com"
