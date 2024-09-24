@@ -16,8 +16,23 @@ type Request struct {
 	Text string `json:"text"`
 }
 
-type Response struct {
+type Layer struct {
+	LayerName   string `json:"layer_name"`
 	Explanation string `json:"explanation"`
+}
+
+type Concept struct {
+	Concept string  `json:"concept"`
+	Layers  []Layer `json:"layers"`
+}
+
+type Topic struct {
+	Topic    string    `json:"topic"`
+	Concepts []Concept `json:"concepts"`
+}
+
+type Response struct {
+	Explanations []Topic `json:"explanations"`
 }
 
 func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -38,8 +53,8 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 		return events.APIGatewayProxyResponse{StatusCode: 500, Body: fmt.Sprintf("Error calling LLM microservice: %v", err)}, nil
 	}
 
-	response := Response{Explanation: llmResponse}
-	jsonResponse, _ := json.Marshal(response)
+	// Preserve the structure by directly passing the llmResponse
+	jsonResponse, _ := json.Marshal(llmResponse)
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
@@ -53,23 +68,26 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	}, nil
 }
 
-func callLLMMicroservice(url, text string) (string, error) {
+func callLLMMicroservice(url, text string) (Response, error) {
 	requestBody, _ := json.Marshal(map[string]string{"text": text})
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "", err
+		return Response{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return Response{}, err
 	}
 
-	var result map[string]interface{}
-	json.Unmarshal(body, &result)
+	var result Response
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return Response{}, err
+	}
 
-	return result["explanation"].(string), nil
+	return result, nil
 }
 
 func main() {

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../services/api.service';
+import { ApiService, Topic, Concept, Layer } from '../services/api.service';
 
 @Component({
   selector: 'app-explain',
@@ -15,18 +15,26 @@ import { ApiService } from '../services/api.service';
         <textarea class="form-control" id="inputText" rows="3" [(ngModel)]="inputText"></textarea>
       </div>
       <button class="btn btn-primary" (click)="explainText()">Explain</button>
-      <div *ngIf="explanation" class="mt-3">
-        <h3>Explanation:</h3>
-        <p>{{ explanation }}</p>
+      <div *ngIf="explanations.length > 0" class="mt-3">
+        <h3>Explanations:</h3>
+        <div *ngFor="let topic of explanations">
+          <h4>{{ topic.topic }}</h4>
+          <div *ngFor="let concept of topic.concepts">
+            <h5>{{ concept.concept }}</h5>
+            <div *ngFor="let layer of concept.layers">
+              <h6>{{ layer.layer_name }}</h6>
+              <p>{{ layer.explanation }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `,
   styles: []
 })
-
 export class ExplainComponent {
   inputText = '';
-  explanation = '';
+  explanations: Topic[] = [];
 
   constructor(private apiService: ApiService) {}
 
@@ -35,11 +43,11 @@ export class ExplainComponent {
     this.apiService.explainText(this.inputText).subscribe(
       (response) => {
         console.log('Received response:', response);
-        this.explanation = response.explanation;
+        this.explanations = response.explanations;
       },
       (error) => {
         console.error('Error:', error);
-        this.explanation = 'An error occurred while explaining the text.';
+        // Handle error appropriately
       }
     );
   }
