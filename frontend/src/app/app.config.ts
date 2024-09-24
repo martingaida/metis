@@ -6,6 +6,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { ApiService } from './services/api.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,10 +15,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideStore(),
     provideEffects(),
-    provideStoreDevtools({ maxAge: 25, logOnly: false }),
-    {
-      provide: 'API_URL',
-      useValue: process.env['API_URL'] || 'http://localhost:3000'
-    }
+    provideStoreDevtools({ maxAge: 25 }),
+    { provide: 'API_URL', useValue: process.env['API_URL'] },
+    ApiService
   ]
 };

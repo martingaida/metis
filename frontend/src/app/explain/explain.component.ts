@@ -31,8 +31,10 @@ export class ExplainComponent {
   constructor(private apiService: ApiService) {}
 
   explainText() {
+    console.log('Explaining text:', this.inputText);
     this.apiService.explainText(this.inputText).subscribe(
       (response) => {
+        console.log('Received response:', response);
         this.explanation = response.explanation;
       },
       (error) => {
