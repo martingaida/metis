@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../services/api.service';
+import { Topic } from '../services/api.service';
 
 @Component({
   selector: 'app-home',
@@ -25,19 +26,18 @@ import { ApiService } from '../services/api.service';
 })
 export class HomeComponent {
   inputText = '';
-  explanation = '';
+  explanation: Topic[] = [];
 
   constructor(private apiService: ApiService) {}
 
   explainText() {
     this.apiService.explainText(this.inputText).subscribe(
       (response) => {
-        this.explanation = response.explanation;
+        this.explanation = response.explanations;
       },
       (error) => {
         console.error('Error:', error);
-        this.explanation = 'An error occurred while explaining the text.';
-      }
+        this.explanation = [{ topic: '', concepts: []}];      }
     );
   }
 }

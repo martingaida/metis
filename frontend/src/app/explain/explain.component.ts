@@ -9,7 +9,6 @@ import { ApiService, Topic, Concept, Layer } from '../services/api.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="container mt-5">
-      <h2>Explain Text</h2>
       <div class="mb-3">
         <label for="inputText" class="form-label">Enter text to explain:</label>
         <textarea class="form-control" id="inputText" rows="3" [(ngModel)]="inputText"></textarea>

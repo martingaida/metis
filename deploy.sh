@@ -47,8 +47,14 @@ check_dependencies() {
 deploy_frontend() {
     echo "Deploying frontend..."
     cd frontend
+    ng cache clean
     npm install
     npm run build -- --configuration=production
+
+    if [ $? -ne 0 ]; then
+        echo "Build failed. Exiting."
+        exit 1
+    fi
 
     # Check for .env file and source it if it exists
     if [ -f .env ]; then
@@ -57,9 +63,9 @@ deploy_frontend() {
     fi
 
     if [ -z "$S3_BUCKET" ]; then
-            echo "Error: S3_BUCKET is not set in .env file"
-            exit 1
-        fi
+        echo "Error: S3_BUCKET is not set in .env file"
+        exit 1
+    fi
     
     if [ -n "$S3_BUCKET" ]; then
         # Clear existing contents of the S3 bucket
@@ -67,9 +73,11 @@ deploy_frontend() {
         aws s3 rm s3://$S3_BUCKET --recursive
 
         # Configure bucket for static website hosting
+        echo "Configuring bucket for static website hosting..."
         aws s3 website s3://$S3_BUCKET --index-document index.html --error-document index.html
 
         # Set bucket policy for public read access
+        echo "Setting bucket policy for public read access..."
         aws s3api put-bucket-policy --bucket $S3_BUCKET --policy "{
             \"Version\": \"2012-10-17\",
             \"Statement\": [
@@ -84,10 +92,23 @@ deploy_frontend() {
         }"
 
         # Sync built files to S3
+        echo "Syncing files to S3..."
         aws s3 sync dist/frontend/browser s3://$S3_BUCKET --delete
+        
+        if [ $? -eq 0 ]; then
+            echo "Sync completed successfully."
+        else
+            echo "Error: Sync to S3 failed."
+            exit 1
+        fi
+
+        # List contents of the bucket to verify update
+        echo "Listing contents of S3 bucket:"
+        aws s3 ls s3://$S3_BUCKET --recursive --human-readable --summarize
 
         # Output the website URL
         echo "Frontend deployed to: http://$S3_BUCKET.s3-website-us-east-1.amazonaws.com"
+        echo "Please clear your browser cache or use incognito mode to see the latest changes."
         
         cd ..
     fi

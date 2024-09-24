@@ -9,11 +9,11 @@ def lambda_handler(event, context):
         text = body.get('text', '')
 
         # Call Explanation handler
-        result = explain.generate_response(text)
+        result = explain.process_text(text)
 
         return {
             'statusCode': 200,
-            'body': json.dumps({'explanation': result})
+            'body': json.dumps({'explanations': result})
         }
     except Exception as e:
         return {
