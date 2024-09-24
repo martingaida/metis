@@ -9,7 +9,7 @@ import { ExplainTextComponent } from './explain/explain.component';
   imports: [CommonModule, RouterOutlet, ExplainTextComponent],
   template: `
     <main class="container">
-      <h1>PLEX/h1>
+      <h1>PLEX</h1>
       <h4>Please Explain</h4>
       <app-explain></app-explain>
     </main>
