@@ -48,7 +48,7 @@ deploy_frontend() {
     echo "Deploying frontend..."
     cd frontend
     npm install
-    npm run build
+    npm run build -- --configuration=production
 
     # Check for .env file and source it if it exists
     if [ -f .env ]; then
@@ -65,7 +65,7 @@ deploy_frontend() {
         # Clear existing contents of the S3 bucket
         echo "Clearing existing contents of S3 bucket..."
         aws s3 rm s3://$S3_BUCKET --recursive
-        
+
         # Configure bucket for static website hosting
         aws s3 website s3://$S3_BUCKET --index-document index.html --error-document index.html
 
