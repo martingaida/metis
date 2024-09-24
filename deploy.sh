@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Check if AWS CLI is configured with valid credentials
+check_aws_credentials() {
+    if ! aws sts get-caller-identity &> /dev/null; then
+        echo "AWS credentials are not configured or are invalid. Please run 'aws configure' and try again."
+        exit 1
+    fi
+}
+
 # Function to check and install dependencies
 check_dependencies() {
     # Check for AWS CLI
@@ -36,11 +44,11 @@ check_dependencies() {
     fi
 }
 
-# Function to deploy a component
-deploy_component() {
-    component=$1
-    echo "Deploying $component..."
-    cd $component
+deploy_frontend() {
+    echo "Deploying frontend..."
+    cd frontend
+    npm install
+    npm run build
 
     # Check for .env file and source it if it exists
     if [ -f .env ]; then
@@ -48,57 +56,127 @@ deploy_component() {
         export $(grep -v '^#' .env | xargs)
     fi
 
-    # For backend (Go), we need to build the binary
-    if [ "$component" == "backend" ]; then
-        # Check if LLM_SERVICE_URL is set
-        if [ -z "$LLM_MICROSERVICE_URL" ]; then
-            echo "Error: LLM_SERVICE_URL is not set in .env file"
+    if [ -z "$S3_BUCKET" ]; then
+            echo "Error: S3_BUCKET is not set in .env file"
             exit 1
         fi
+    
+    if [ -n "$S3_BUCKET" ]; then
+        # Configure bucket for static website hosting
+        aws s3 website s3://$S3_BUCKET --index-document index.html --error-document index.html
 
-        # For backend (Go), we need to build the binary
-        echo "Building Go Lambda function..."
-        cd src
-        GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+        # Set bucket policy for public read access
+        aws s3api put-bucket-policy --bucket $S3_BUCKET --policy "{
+            \"Version\": \"2012-10-17\",
+            \"Statement\": [
+                {
+                    \"Sid\": \"PublicReadGetObject\",
+                    \"Effect\": \"Allow\",
+                    \"Principal\": \"*\",
+                    \"Action\": \"s3:GetObject\",
+                    \"Resource\": \"arn:aws:s3:::$S3_BUCKET/*\"
+                }
+            ]
+        }"
+
+        # Sync built files to S3
+        aws s3 sync dist/frontend s3://$S3_BUCKET --delete
+
+        # Output the website URL
+        echo "Frontend deployed to: http://$S3_BUCKET.s3-website-us-east-1.amazonaws.com"
+        
         cd ..
-        
-        # Use SAM to package and deploy
-        sam package --template-file template.yaml --output-template-file packaged.yaml --s3-bucket metis-backend-w8ej736hj9
-        sam deploy --template-file packaged.yaml --stack-name metis-backend --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides LLMServiceUrl=$LLM_MICROSERVICE_URL
-    else
-        # For other components (like microservices), use standard SAM commands
-        sam build
-        
-        # Check if OPENAI_API_KEY is set and add it to parameter overrides if it exists
-        if [ -n "$OPENAI_API_KEY" ]; then
-            echo "Using OPENAI_API_KEY from .env file"
-            sam deploy --stack-name metis-$component --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides OpenAIApiKey=$OPENAI_API_KEY
-        else
-            echo "OPENAI_API_KEY not found in .env file. Deployment may fail."
-            sam deploy --stack-name metis-$component --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset
-        fi
+    fi
+}
+
+deploy_backend() {
+    echo "Deploying backend..."
+    cd backend
+
+    # Check for .env file and source it if it exists
+    if [ -f .env ]; then
+        echo "Found .env file. Loading environment variables..."
+        export $(grep -v '^#' .env | xargs)
+    fi
+
+    # Check if LLM_MICROSERVICE_URL is set
+    if [ -z "$LLM_MICROSERVICE_URL" ]; then
+        echo "Error: LLM_MICROSERVICE_URL is not set in .env file"
+        exit 1
+    fi
+
+    echo "Building Go Lambda function..."
+    cd src
+    GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+    cd ..
+    
+    # Use SAM to package and deploy
+    sam package --template-file template.yaml --output-template-file packaged.yaml --s3-bucket metis-backend-w8ej736hj9
+    if [ $? -ne 0 ]; then
+        echo "Error: SAM package failed"
+        exit 1
+    fi
+
+    sam deploy --template-file packaged.yaml --stack-name metis-backend --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides LLMServiceUrl=$LLM_MICROSERVICE_URL
+    if [ $? -ne 0 ]; then
+        echo "Error: SAM deploy failed"
+        exit 1
+    fi
+
+    cd ..
+    echo "Backend deployment completed successfully"
+}
+
+deploy_microservices() {
+    echo "Deploying microservices..."
+    cd microservices
+
+    # Check for .env file and source it if it exists
+    if [ -f .env ]; then
+        echo "Found .env file. Loading environment variables..."
+        export $(grep -v '^#' .env | xargs)
+    fi
+
+    sam build
+    if [ $? -ne 0 ]; then
+        echo "Error: SAM build failed"
+        exit 1
     fi
     
+    # Check if OPENAI_API_KEY is set and add it to parameter overrides if it exists
+    if [ -n "$OPENAI_API_KEY" ]; then
+        echo "Using OPENAI_API_KEY from .env file"
+        sam deploy --stack-name metis-microservices --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides OpenAIApiKey=$OPENAI_API_KEY
+    else
+        echo "OPENAI_API_KEY not found in .env file. Deployment may fail."
+        sam deploy --stack-name metis-microservices --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo "Error: SAM deploy failed"
+        exit 1
+    fi
+
     cd ..
+    echo "Microservices deployment completed successfully"
 }
 
 # Check and install dependencies
 check_dependencies
+check_aws_credentials
 
 # Check command line argument
 if [ "$1" = "frontend" ]; then
-    echo "Frontend deployment is not implemented in this script."
+    deploy_frontend
 elif [ "$1" = "backend" ]; then
-    deploy_component "backend"
+    deploy_backend
 elif [ "$1" = "microservices" ]; then
-    deploy_component "microservices"
+    deploy_microservices
 elif [ "$1" = "all" ]; then
-    deploy_component "backend"
-    deploy_component "microservices"
-    echo "Frontend deployment is not implemented in this script."
+    deploy_backend
+    deploy_microservices
+    deploy_frontend
 else
-    echo "Usage: ./deploy.sh [backend|microservices|all]"
+    echo "Usage: ./deploy.sh [frontend|backend|microservices|all]"
     exit 1
 fi
-
-echo "Deployment completed successfully!"
