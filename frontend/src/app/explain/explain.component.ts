@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-explain',
@@ -23,22 +23,22 @@ import { HttpClient } from '@angular/common/http';
   `,
   styles: []
 })
-export class ExplainTextComponent {
+
+export class ExplainComponent {
   inputText = '';
   explanation = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private apiService: ApiService) {}
 
   explainText() {
-    this.http.post<any>(`${process.env['API_URL']}/api/explain`, { text: this.inputText })
-      .subscribe(
-        response => {
-          this.explanation = response.explanation;
-        },
-        error => {
-          console.error('Error:', error);
-          this.explanation = 'An error occurred while explaining the text.';
-        }
-      );
+    this.apiService.explainText(this.inputText).subscribe(
+      (response) => {
+        this.explanation = response.explanation;
+      },
+      (error) => {
+        console.error('Error:', error);
+        this.explanation = 'An error occurred while explaining the text.';
+      }
+    );
   }
 }

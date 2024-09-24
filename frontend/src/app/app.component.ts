@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { ExplainTextComponent } from './explain/explain.component';
+import { ExplainComponent } from './explain/explain.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, ExplainTextComponent],
+  imports: [CommonModule, RouterOutlet, ExplainComponent],
   template: `
     <main class="container">
       <h1>PLEX</h1>
