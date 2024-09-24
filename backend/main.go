@@ -68,6 +68,17 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	}, nil
 }
 
+func handleOptions(events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Headers: map[string]string{
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Methods": "POST, OPTIONS",
+			"Access-Control-Allow-Headers": "Content-Type",
+		},
+	}, nil
+}
+
 func callLLMMicroservice(url, text string) (Response, error) {
 	requestBody, _ := json.Marshal(map[string]string{"text": text})
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
@@ -91,5 +102,10 @@ func callLLMMicroservice(url, text string) (Response, error) {
 }
 
 func main() {
-	lambda.Start(handleRequest)
+	lambda.Start(func(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+		if req.HTTPMethod == "OPTIONS" {
+			return handleOptions(req)
+		}
+		return handleRequest(req)
+	})
 }

@@ -24,6 +24,15 @@ Resources:
           Properties:
             Path: /api/explain
             Method: post
+            Cors:
+              AllowMethods: "'POST,OPTIONS'"
+              AllowHeaders: "'Content-Type'"
+              AllowOrigin: "'*'"
+        OptionsApi:
+          Type: Api
+          Properties:
+            Path: /api/explain
+            Method: options
 
 Outputs:
   BackendApiUrl:
