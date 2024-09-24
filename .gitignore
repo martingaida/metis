@@ -313,3 +313,6 @@ Thumbs.db
 .settings/
 xcuserdata/
 *.sublime-workspace
+
+# Angular
+.angular
