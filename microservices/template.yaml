@@ -13,21 +13,34 @@ Resources:
     Properties:
       CodeUri: llm/
       Handler: app.lambda_handler
-      FunctionUrlConfig:
-        AuthType: NONE
-        Cors:
-          AllowOrigins:
-            - '*'
-          AllowMethods:
-            - POST
-          AllowHeaders:
-            - Content-Type
       Environment:
         Variables:
           PYTHONPATH: ./
           OPENAI_API_KEY: !Ref OpenAIApiKey
     Metadata:
       BuildMethod: python3.9
+
+  LLMFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref LLMFunction
+      AuthType: NONE
+      Cors:
+        AllowCredentials: false
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - POST
+        AllowHeaders:
+          - Content-Type
+
+  LLMFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref LLMFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
 
 Parameters:
   OpenAIApiKey:
@@ -38,4 +51,4 @@ Parameters:
 Outputs:
   LLMFunctionUrl:
     Description: "LLM Function URL"
-    Value: !GetAtt LLMFunction.FunctionUrl
+    Value: !GetAtt LLMFunctionUrl.FunctionUrl

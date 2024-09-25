@@ -36,7 +36,7 @@ export class ApiService {
     });
 
     return this.http.post<ExplanationResponse>(
-      `${this.apiUrl}/api/explain`,
+      `${this.apiUrl}`,
       { text },
       { headers }
     );

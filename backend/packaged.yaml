@@ -1,51 +1,61 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Description: 'metis-backend
+
+  Sample SAM Template for metis-backend
+
+  '
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 128
 Parameters:
   LLMServiceUrl:
     Type: String
-    Description: URL for the LLM microservice
+    Description: The URL of the LLM service
 Resources:
-  BackendApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      Cors:
-        AllowMethods: '''POST,OPTIONS'''
-        AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
-        AllowOrigin: '''*'''
-    Metadata:
-      SamResourceId: BackendApi
   BackendFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: main
+      CodeUri: s3://metis-backend-w8ej736hj9/631b7ac621a0ddef51fe176661b4495d
+      Handler: bootstrap
       Runtime: provided.al2
-      CodeUri: s3://metis-backend-w8ej736hj9/d8ffbf5e6b507cd26d9f6da29ec50d1f
-      MemorySize: 128
-      Timeout: 600
+      Architectures:
+      - x86_64
       Environment:
         Variables:
           LLM_MICROSERVICE_URL:
             Ref: LLMServiceUrl
-      Events:
-        ExplainApi:
-          Type: Api
-          Properties:
-            RestApiId:
-              Ref: BackendApi
-            Path: /api/explain
-            Method: POST
-        OptionsApi:
-          Type: Api
-          Properties:
-            RestApiId:
-              Ref: BackendApi
-            Path: /api/explain
-            Method: OPTIONS
     Metadata:
       SamResourceId: BackendFunction
+  BackendFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn:
+        Ref: BackendFunction
+      AuthType: NONE
+    Metadata:
+      SamResourceId: BackendFunctionUrl
+  BackendFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: BackendFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+    Metadata:
+      SamResourceId: BackendFunctionUrlPermission
 Outputs:
-  BackendApiUrl:
-    Description: API Gateway endpoint URL for the backend
+  BackendFunction:
+    Description: Backend Lambda Function ARN
     Value:
-      Fn::Sub: https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/explain
+      Fn::GetAtt:
+      - BackendFunction
+      - Arn
+  BackendFunctionUrl:
+    Description: Backend Function URL
+    Value:
+      Fn::GetAtt:
+      - BackendFunctionUrl
+      - FunctionUrl

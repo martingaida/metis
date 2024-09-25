@@ -190,6 +190,8 @@ deploy_microservices() {
     fi
 
     cd ..
+    MICROSERVICE_URL=$(aws cloudformation describe-stacks --stack-name metis-microservices --query "Stacks[0].Outputs[?OutputKey=='LLMFunctionUrl'].OutputValue" --output text)
+    echo "Microservices LLM Function URL: $MICROSERVICE_URL"
     echo "Microservices deployment completed successfully"
 }
 
