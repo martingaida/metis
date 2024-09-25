@@ -29,7 +29,8 @@ class Topic(BaseModel):
 
 class StructuredExplanation(BaseModel):
     topics: List[Topic]
-
+    most_significant_takeaway: str
+    
 
 def generate_structured_explanation(text):
     prompt = f"""Analyze the following text and provide a structured explanation:
@@ -40,6 +41,7 @@ def generate_structured_explanation(text):
         - Layer 1: Simple explanation for beginners
         - Layer 2: Detailed explanation with examples
         - Layer 3: Technical explanation for advanced readers
+        4. Provide a short, concise summary (1-3 sentences) that captures the most significant takeaway from the entire text.
 
         Present the response in the following JSON format:
 
@@ -76,8 +78,9 @@ def generate_structured_explanation(text):
                     }}
                 ]
                 }}
-            ]
-            }}
+            ],
+            "most_significant_takeaway": "A concise summary capturing the most important point from the entire text."
+        }}
 
         Text to analyze:
         {text}
@@ -107,82 +110,82 @@ def generate_response(text):
 
 
 # For testing
-# if __name__ == "__main__":
-#     sample_text = """Abstract. Rapid advances in Artificial Intelligence (AI) are
-#         generating much controversy in society, often without scientific
-#         basis. As occurred the development of other emerging technologies,
-#         such as the introduction of electricity in the early 20th century, AI
-#         causes both fascination and fear. Following the advice of the
-#         philosopher R.W. Emerson's advice ‘the knowledge is the antidote
-#         to fear’, this paper seeks to contribute to the dissemination of
-#         knowledge about AI. To this end, it reflects on the following
-#         questions: the origins of AI, its possible future evolution, its ability
-#         to show feelings, the associated threats and dangers, and the
-#         concept of AI singularity
-#         Conclusions
-#         AI is emerging as the main focus of the sixth industrial revolution and
-#         a key catalyst in the emergence of a new world order. This paper reflects
-#         on several crucial aspects, such as the origins of AI, its possible future
-#         evolution, its ability to simulate feelings, the associated threats and
-#         dangers, and the concept of AI singularity. The main conclusions are
-#         presented below.
-#         Defining AI as the discipline that makes machines perform tasks
-#         that, if done by humans, would require intelligence, we can place its
-#         origins in the Early Modern Era, when the first calculating machines
-#         were created.
-#         In terms of future developments, some of the challenges would be to
-#         develop machines capable of emulating human mental capacities, such
-#         as reasoning, comprehension, imagination, perception, recognition,
-#         creativity and emotions. Although we are still far from achieving these
-#         goals, very significant partial progress has been made. On the other
-#         hand, while AI systems can simulate emotions in a useful way in certain
-#         contexts, they are not capable of experiencing real feelings.
-#         Among the current, non-speculative problems related to AI, several
-#         major drawbacks stand out. One of the most discussed is the
-#         destruction of jobs, requiring the development of new training and
-#         adaptation strategies. In addition, there exists a propagandistic misuse
-#         of the term ‘AI’, attributing it to systems that actually do not comply
-#         with its characteristics. Another relevant problem is the global
-#         monitoring and control of data, which makes it possible to extract 
-#         Five questions and answers about artificial intelligence 15
-#         confidential information and even alter the balance of power at the
-#         global level, given that information is a strategic resource. This is
-#         compounded by the creation and dissemination of fake news with the
-#         appearance of authenticity, impersonation, and the increasing difficulty
-#         of tracing its origin and assigning responsibility in these processes.
-#         Significant progress has been made towards the creation of an
-#         artificial general intelligence (AGI), i.e. an AI with a flexible intellect
-#         comparable to humans, thanks to the development of OpenAI's GPT-4
-#         language model, which allows machines to converse with each other as
-#         if they were human beings [20]. This advance represents an approach
-#         to one of the biggest potential risks: the feared singularity of AI.
-#         Speculatively, it is believed that at this point a superintelligence capable
-#         of monitoring and controlling all aspects of reality could be achieved.
-#         Despite the above dangers, it is essential to remember that
-#         everything a computer system, and especially an AI programme, does
-#         is the result of what its designers intended. A machine, on its own,
-#         cannot execute any operation that has not been planned and
-#         anticipated by human beings. In fact, intelligence and ingenuity reside
-#         not in the algorithms and machines, but in the people, who conceive
-#         and develop them.
-#         AI does not possess intelligence in the human sense; it is limited to
-#         learning and making deductions. It lacks creativity and is not able to
-#         hypothesise, speculate, make discoveries on its own initiative, or
-#         automatically apply its abilities to different areas, as we humans do.
-#         Computers can reason, but they do not think; if they are not given initial
-#         data or information, they do not know what to do on their own. To reach
-#         a human-like level of intelligence, machines would have to be
-#         autonomously intuitive and creative.
-#         AI systems must be transparent, subject to human oversight, and
-#         assessable and certifiable by external authorities. It is essential to
-#         ensure that the data used to train these systems is free of bias and that
-#         fundamental rights are always respected. The key challenge is to
-#         achieve developments that truly drive progress, equality and prosperity
-#         for all, not just for the few. To this end, it is crucial to have adequate
-#         legislation and, most difficult of all, to establish effective monitoring
-#         systems to ensure compliance. Fortunately, various entities such as
-#         UNESCO, the European Union and several states are already working
-#         in this direction."""
+if __name__ == "__main__":
+    sample_text = """Abstract. Rapid advances in Artificial Intelligence (AI) are
+        generating much controversy in society, often without scientific
+        basis. As occurred the development of other emerging technologies,
+        such as the introduction of electricity in the early 20th century, AI
+        causes both fascination and fear. Following the advice of the
+        philosopher R.W. Emerson's advice ‘the knowledge is the antidote
+        to fear’, this paper seeks to contribute to the dissemination of
+        knowledge about AI. To this end, it reflects on the following
+        questions: the origins of AI, its possible future evolution, its ability
+        to show feelings, the associated threats and dangers, and the
+        concept of AI singularity
+        Conclusions
+        AI is emerging as the main focus of the sixth industrial revolution and
+        a key catalyst in the emergence of a new world order. This paper reflects
+        on several crucial aspects, such as the origins of AI, its possible future
+        evolution, its ability to simulate feelings, the associated threats and
+        dangers, and the concept of AI singularity. The main conclusions are
+        presented below.
+        Defining AI as the discipline that makes machines perform tasks
+        that, if done by humans, would require intelligence, we can place its
+        origins in the Early Modern Era, when the first calculating machines
+        were created.
+        In terms of future developments, some of the challenges would be to
+        develop machines capable of emulating human mental capacities, such
+        as reasoning, comprehension, imagination, perception, recognition,
+        creativity and emotions. Although we are still far from achieving these
+        goals, very significant partial progress has been made. On the other
+        hand, while AI systems can simulate emotions in a useful way in certain
+        contexts, they are not capable of experiencing real feelings.
+        Among the current, non-speculative problems related to AI, several
+        major drawbacks stand out. One of the most discussed is the
+        destruction of jobs, requiring the development of new training and
+        adaptation strategies. In addition, there exists a propagandistic misuse
+        of the term ‘AI’, attributing it to systems that actually do not comply
+        with its characteristics. Another relevant problem is the global
+        monitoring and control of data, which makes it possible to extract 
+        Five questions and answers about artificial intelligence 15
+        confidential information and even alter the balance of power at the
+        global level, given that information is a strategic resource. This is
+        compounded by the creation and dissemination of fake news with the
+        appearance of authenticity, impersonation, and the increasing difficulty
+        of tracing its origin and assigning responsibility in these processes.
+        Significant progress has been made towards the creation of an
+        artificial general intelligence (AGI), i.e. an AI with a flexible intellect
+        comparable to humans, thanks to the development of OpenAI's GPT-4
+        language model, which allows machines to converse with each other as
+        if they were human beings [20]. This advance represents an approach
+        to one of the biggest potential risks: the feared singularity of AI.
+        Speculatively, it is believed that at this point a superintelligence capable
+        of monitoring and controlling all aspects of reality could be achieved.
+        Despite the above dangers, it is essential to remember that
+        everything a computer system, and especially an AI programme, does
+        is the result of what its designers intended. A machine, on its own,
+        cannot execute any operation that has not been planned and
+        anticipated by human beings. In fact, intelligence and ingenuity reside
+        not in the algorithms and machines, but in the people, who conceive
+        and develop them.
+        AI does not possess intelligence in the human sense; it is limited to
+        learning and making deductions. It lacks creativity and is not able to
+        hypothesise, speculate, make discoveries on its own initiative, or
+        automatically apply its abilities to different areas, as we humans do.
+        Computers can reason, but they do not think; if they are not given initial
+        data or information, they do not know what to do on their own. To reach
+        a human-like level of intelligence, machines would have to be
+        autonomously intuitive and creative.
+        AI systems must be transparent, subject to human oversight, and
+        assessable and certifiable by external authorities. It is essential to
+        ensure that the data used to train these systems is free of bias and that
+        fundamental rights are always respected. The key challenge is to
+        achieve developments that truly drive progress, equality and prosperity
+        for all, not just for the few. To this end, it is crucial to have adequate
+        legislation and, most difficult of all, to establish effective monitoring
+        systems to ensure compliance. Fortunately, various entities such as
+        UNESCO, the European Union and several states are already working
+        in this direction."""
 
-#     response = generate_response(sample_text)
-#     print(json.dumps(response, indent=2))
+    response = generate_response(sample_text)
+    print(json.dumps(response, indent=2))

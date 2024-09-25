@@ -18,7 +18,10 @@ export interface Topic {
 }
 
 export interface ExplanationResponse {
-  explanations: Topic[];
+  explanations: {
+    topics: Topic[];
+    most_significant_takeaway: string;
+  };
 }
 
 @Injectable({

@@ -29,6 +29,13 @@ import { ApiService, Topic, Concept, Layer } from '../services/api.service';
           </div>
         </div>
       </div>
+      <div *ngIf="mostSignificantTakeaway" class="mt-3">
+        <h3>Most Significant Takeaway:</h3>
+        <p>{{ mostSignificantTakeaway }}</p>
+      </div>
+      <div *ngIf="totalTime" class="mt-3">
+        <p>Total processing time: {{ totalTime }} seconds</p>
+      </div>
     </div>
   `,
   styles: []
@@ -36,6 +43,8 @@ import { ApiService, Topic, Concept, Layer } from '../services/api.service';
 export class ExplainComponent {
   inputText = '';
   explanations: Topic[] = [];
+  mostSignificantTakeaway: string = '';
+  totalTime: number = 0;
 
   constructor(private apiService: ApiService) {}
 
@@ -44,7 +53,8 @@ export class ExplainComponent {
     this.apiService.explainText(this.inputText).subscribe(
       (response) => {
         console.log('Received response:', response);
-        this.explanations = response.explanations;
+        this.explanations = response.explanations.topics;
+        this.mostSignificantTakeaway = response.explanations.most_significant_takeaway;
       },
       (error) => {
         console.error('Error:', error);

@@ -38,7 +38,10 @@ type Response struct {
 }
 
 type LLMResponse struct {
-	Explanations []Topic `json:"explanations"`
+	Explanations struct {
+		Topics                  []Topic `json:"topics"`
+		MostSignificantTakeaway string  `json:"most_significant_takeaway"`
+	} `json:"explanations"`
 }
 
 func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
@@ -138,13 +141,13 @@ func callLLMMicroservice(text string) (LLMResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	var topics []Topic
-	err = json.NewDecoder(resp.Body).Decode(&topics)
+	var llmResponse LLMResponse
+	err = json.NewDecoder(resp.Body).Decode(&llmResponse)
 	if err != nil {
 		return LLMResponse{}, fmt.Errorf("error decoding response: %v", err)
 	}
 
-	return LLMResponse{Explanations: topics}, nil
+	return llmResponse, nil
 }
 
 func main() {
