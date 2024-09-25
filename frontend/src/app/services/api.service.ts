@@ -3,8 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Layer {
-  layer_name: string;
-  explanation: string;
+  What: string;
+  Why: string;
+  How: string;
 }
 
 export interface Concept {
