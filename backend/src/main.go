@@ -138,13 +138,13 @@ func callLLMMicroservice(text string) (LLMResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	var llmResponse LLMResponse
-	err = json.NewDecoder(resp.Body).Decode(&llmResponse)
+	var topics []Topic
+	err = json.NewDecoder(resp.Body).Decode(&topics)
 	if err != nil {
 		return LLMResponse{}, fmt.Errorf("error decoding response: %v", err)
 	}
 
-	return llmResponse, nil
+	return LLMResponse{Explanations: topics}, nil
 }
 
 func main() {
