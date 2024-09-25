@@ -316,3 +316,6 @@ xcuserdata/
 
 # Angular
 .angular
+
+# Go
+backend/bootstrap

@@ -66,7 +66,7 @@ func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 
 	// Call LLM microservice
 	llmServiceURL := os.Getenv("LLM_MICROSERVICE_URL")
-	log.Printf("LLM_MICROSERVICE_URL: %s", llmServiceURL)
+
 	if llmServiceURL == "" {
 		log.Println("LLM_MICROSERVICE_URL not set")
 		return events.LambdaFunctionURLResponse{
@@ -76,8 +76,8 @@ func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 		}, nil
 	}
 
-	log.Printf("Calling LLM microservice at %s", llmServiceURL)
 	llmResponse, err := callLLMMicroservice(llmServiceURL, request.Text)
+
 	if err != nil {
 		log.Printf("Error calling LLM microservice: %v", err)
 		return events.LambdaFunctionURLResponse{
