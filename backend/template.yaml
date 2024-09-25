@@ -7,15 +7,6 @@ Parameters:
     Description: URL for the LLM microservice
 
 Resources:
-  BackendApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      Cors:
-        AllowMethods: "'POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'*'"
-
   BackendFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -23,25 +14,21 @@ Resources:
       Runtime: provided.al2
       CodeUri: ./
       MemorySize: 128
-      Timeout: 600
+      Timeout: 900
       Environment:
         Variables:
           LLM_MICROSERVICE_URL: !Ref LLMServiceUrl
-      Events:
-        ExplainApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref BackendApi
-            Path: /api/explain
-            Method: POST
-        OptionsApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref BackendApi
-            Path: /api/explain
-            Method: OPTIONS
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - '*'
+          AllowMethods:
+            - POST
+          AllowHeaders:
+            - Content-Type
 
 Outputs:
-  BackendApiUrl:
-    Description: "API Gateway endpoint URL for the backend"
-    Value: !Sub "https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/explain"
+  BackendFunctionUrl:
+    Description: "Backend Function URL"
+    Value: !GetAtt BackendFunction.FunctionUrl

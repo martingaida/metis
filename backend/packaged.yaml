@@ -20,7 +20,7 @@ Resources:
     Properties:
       Handler: main
       Runtime: provided.al2
-      CodeUri: s3://metis-backend-w8ej736hj9/97ba9a88eeda4ee8d40dd16a229ffd02
+      CodeUri: s3://metis-backend-w8ej736hj9/d8ffbf5e6b507cd26d9f6da29ec50d1f
       MemorySize: 128
       Timeout: 600
       Environment:

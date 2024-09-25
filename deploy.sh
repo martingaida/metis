@@ -154,6 +154,8 @@ deploy_backend() {
     fi
 
     cd ..
+    BACKEND_URL=$(aws cloudformation describe-stacks --stack-name metis-backend --query "Stacks[0].Outputs[?OutputKey=='BackendFunctionUrl'].OutputValue" --output text)
+    echo "Backend Function URL: $BACKEND_URL"
     echo "Backend deployment completed successfully"
 }
 

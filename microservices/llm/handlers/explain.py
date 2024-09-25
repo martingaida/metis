@@ -128,20 +128,3 @@ def generate_response(text):
         return result
     except Exception as e:
         return f"Error: {str(e)}"
-
-# if __name__ == "__main__":
-#     sample_text = """
-#         Solid-state spin systems hold great promise for quantum information processing and the construction of quantum networks. However, the considerable inhomogeneity of spins in solids poses
-#         a significant challenge to the scaling of solid-state quantum systems. A practical protocol to individually control and entangle spins remains elusive. To this end, we propose a hybrid spin-phonon
-#         architecture based on spin-embedded SiC optomechanical crystal (OMC) cavities, which integrates
-#         photonic and phononic channels allowing for interactions between multiple spins. With a Ramanfacilitated process, the OMC cavities support coupling between the spin and the zero-point motion
-#         of the OMC cavity mode reaching 0.57 MHz, facilitating phonon preparation and spin Rabi swap
-#         processes. Based on this, we develop a spin-phonon interface that achieves a two-qubit controlledZ gate with a simulated fidelity of 96.80% and efficiently generates highly entangled Dicke states
-#         with over 99% fidelity, by engineering the strongly coupled spin-phonon dark state which is robust
-#         against loss from excited state relaxation as well as spectral inhomogeneity of the defect centers.
-#         This provides a hybrid platform for exploring spin entanglement with potential scalability and full
-#         connectivity in addition to an optical link, and offers a pathway to investigate quantum acoustics
-#         in solid-state systems.
-#     """
-#     result = generate_response(sample_text)
-#     print(result)

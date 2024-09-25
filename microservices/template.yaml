@@ -13,12 +13,15 @@ Resources:
     Properties:
       CodeUri: llm/
       Handler: app.lambda_handler
-      Events:
-        LLMApi:
-          Type: Api
-          Properties:
-            Path: /microservices/llm
-            Method: post
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - '*'
+          AllowMethods:
+            - POST
+          AllowHeaders:
+            - Content-Type
       Environment:
         Variables:
           PYTHONPATH: ./
@@ -33,9 +36,6 @@ Parameters:
     NoEcho: true
 
 Outputs:
-  LLMApi:
-    Description: "API Gateway endpoint URL for LLM function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/microservices/llm/"
-  LLMFunction:
-    Description: "LLM Lambda Function ARN"
-    Value: !GetAtt LLMFunction.Arn
+  LLMFunctionUrl:
+    Description: "LLM Function URL"
+    Value: !GetAtt LLMFunction.FunctionUrl

@@ -38,7 +38,7 @@ export class ApiService {
     return this.http.post<ExplanationResponse>(
       `${this.apiUrl}/api/explain`,
       { text },
-      { headers, withCredentials: true }
+      { headers }
     );
   }
 }

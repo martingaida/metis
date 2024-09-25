@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -35,18 +35,18 @@ type Response struct {
 	Explanations []Topic `json:"explanations"`
 }
 
-func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	log.Printf("Received request: Method=%s, Path=%s, Body=%s", req.HTTPMethod, req.Path, req.Body)
+func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	log.Printf("Received request: Method=%s, Body=%s", req.RequestContext.HTTP.Method, req.Body)
 
-	if req.HTTPMethod == "OPTIONS" {
-		return handleOptions(req)
+	if req.RequestContext.HTTP.Method == "OPTIONS" {
+		return handleOptions()
 	}
 
 	var request Request
 	err := json.Unmarshal([]byte(req.Body), &request)
 	if err != nil {
 		log.Printf("Error unmarshaling request body: %v", err)
-		return events.APIGatewayProxyResponse{
+		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
 			Body:       "Invalid request body: " + err.Error(),
 			Headers:    getCORSHeaders(),
@@ -57,8 +57,7 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 
 	if request.Text == "" {
 		log.Println("Text field is empty")
-
-		return events.APIGatewayProxyResponse{
+		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
 			Body:       "Text field is required",
 			Headers:    getCORSHeaders(),
@@ -70,8 +69,7 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	log.Printf("LLM_MICROSERVICE_URL: %s", llmServiceURL)
 	if llmServiceURL == "" {
 		log.Println("LLM_MICROSERVICE_URL not set")
-
-		return events.APIGatewayProxyResponse{
+		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
 			Body:       "LLM_MICROSERVICE_URL not set",
 			Headers:    getCORSHeaders(),
@@ -82,8 +80,7 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	llmResponse, err := callLLMMicroservice(llmServiceURL, request.Text)
 	if err != nil {
 		log.Printf("Error calling LLM microservice: %v", err)
-
-		return events.APIGatewayProxyResponse{
+		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
 			Body:       "Error calling LLM microservice: " + err.Error(),
 			Headers:    getCORSHeaders(),
@@ -92,80 +89,51 @@ func handleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 
 	log.Printf("LLM microservice response: %s", llmResponse)
 
-	// Parse LLM response
-	var response Response
-	err = json.Unmarshal([]byte(llmResponse), &response)
-	if err != nil {
-		log.Printf("Error parsing LLM response: %v", err)
+	return events.LambdaFunctionURLResponse{
+		StatusCode: 200,
+		Body:       llmResponse,
+		Headers:    getCORSHeaders(),
+	}, nil
+}
 
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       "Error parsing LLM response: " + err.Error(),
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
-	// Return response
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		log.Printf("Error marshaling response: %v", err)
-
-		return events.APIGatewayProxyResponse{
-			StatusCode: 500,
-			Body:       "Error marshaling response: " + err.Error(),
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
-	log.Printf("Returning response: %s", string(jsonResponse))
-
-	return events.APIGatewayProxyResponse{
+func handleOptions() (events.LambdaFunctionURLResponse, error) {
+	return events.LambdaFunctionURLResponse{
 		StatusCode: 200,
 		Headers:    getCORSHeaders(),
-		Body:       string(jsonResponse),
 	}, nil
 }
 
 func getCORSHeaders() map[string]string {
 	return map[string]string{
-		"Content-Type":                     "application/json",
-		"Access-Control-Allow-Origin":      "*",
-		"Access-Control-Allow-Methods":     "POST, OPTIONS",
-		"Access-Control-Allow-Headers":     "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-		"Access-Control-Allow-Credentials": "true",
+		"Access-Control-Allow-Origin":  "*",
+		"Access-Control-Allow-Methods": "POST, OPTIONS",
+		"Access-Control-Allow-Headers": "Content-Type",
 	}
 }
 
 func callLLMMicroservice(url, text string) (string, error) {
 	requestBody, err := json.Marshal(map[string]string{"text": text})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error marshaling request body: %v", err)
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+	var response struct {
+		Message   string `json:"message"`
+		RequestID string `json:"requestId"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return "", fmt.Errorf("error decoding response: %v", err)
 	}
 
-	return string(body), nil
-}
-
-func handleOptions(events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Headers: map[string]string{
-			"Access-Control-Allow-Origin":      "*",
-			"Access-Control-Allow-Methods":     "POST, OPTIONS",
-			"Access-Control-Allow-Headers":     "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-			"Access-Control-Allow-Credentials": "true",
-		},
-	}, nil
+	// Here, instead of polling, we're just returning a message that processing has started
+	// In a real-world scenario, you might implement a way to check the status or retrieve the result later
+	return fmt.Sprintf("Processing started. Request ID: %s", response.RequestID), nil
 }
 
 func main() {
