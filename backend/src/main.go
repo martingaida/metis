@@ -19,8 +19,9 @@ type Request struct {
 }
 
 type Layer struct {
-	LayerName   string `json:"layer_name"`
-	Explanation string `json:"explanation"`
+	What string `json:"what"`
+	Why  string `json:"why"`
+	How  string `json:"how"`
 }
 
 type Concept struct {
@@ -39,8 +40,8 @@ type Response struct {
 
 type LLMResponse struct {
 	Explanations struct {
-		Topics                  []Topic `json:"topics"`
-		MostSignificantTakeaway string  `json:"most_significant_takeaway"`
+		Topics       []Topic `json:"topics"`
+		MainTakeaway string  `json:"main_takeaway"`
 	} `json:"explanations"`
 }
 

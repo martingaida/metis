@@ -15,9 +15,9 @@ load_dotenv(dotenv_path=microservices_root_dir / ".env")
 client = OpenAI()
 
 class Layer(BaseModel):
-    What: str
-    Why: str
-    How: str
+    what: str
+    why: str
+    how: str
 
 class Concept(BaseModel):
     concept: str
@@ -29,7 +29,7 @@ class Topic(BaseModel):
 
 class StructuredExplanation(BaseModel):
     topics: List[Topic]
-    most_significant_takeaway: str
+    main_takeaway: str
 
 
 def generate_structured_explanation(text):
@@ -55,23 +55,23 @@ def generate_structured_explanation(text):
                     "layers": [
                         {{
                         "layer_1": {{
-                            "What": "Simple explanation of what it is",
-                            "Why": "Simple explanation of why it's important",
-                            "How": "Simple explanation of how it works"
+                            "what": "Simple explanation of what it is",
+                            "why": "Simple explanation of why it's important",
+                            "how": "Simple explanation of how it works"
                         }}
                         }},
                         {{
                         "layer_2": {{
-                            "What": "More detailed explanation with examples",
-                            "Why": "Detailed explanation of its significance",
-                            "How": "More detailed explanation of its mechanics"
+                            "what": "More detailed explanation with examples",
+                            "why": "Detailed explanation of its significance",
+                            "how": "More detailed explanation of its mechanics"
                         }}
                         }},
                         {{
                         "layer_3": {{
-                            "What": "Technical definition and components",
-                            "Why": "In-depth explanation of its importance",
-                            "How": "Technical explanation of its workings"
+                            "what": "Technical definition and components",
+                            "why": "In-depth explanation of its importance",
+                            "how": "Technical explanation of its workings"
                         }}
                         }}
                     ]
@@ -79,7 +79,7 @@ def generate_structured_explanation(text):
                 ]
                 }}
             ],
-            "most_significant_takeaway": "A concise summary capturing the most important point from the entire text."
+            "main_takeaway": "A concise summary capturing the most important point from the entire text."
         }}
 
         Text to analyze:
@@ -98,8 +98,9 @@ def generate_structured_explanation(text):
     response_json = json.loads(completion.choices[0].message.content)
     print("Raw API response:", completion.choices[0].message.content)
     print("Parsed response:", response_json)
-    
-    return StructuredExplanation(**response_json)
+    result = StructuredExplanation(**response_json)
+    print(f'Result: {result}')
+    return result
 
 def generate_response(text):
     try:
