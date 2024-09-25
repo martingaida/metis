@@ -20,9 +20,11 @@ import { ApiService, Topic, Concept, Layer } from '../services/api.service';
           <h4>{{ topic.topic }}</h4>
           <div *ngFor="let concept of topic.concepts">
             <h5>{{ concept.concept }}</h5>
-            <div *ngFor="let layer of concept.layers">
-              <h6>{{ layer.layer_name }}</h6>
-              <p>{{ layer.explanation }}</p>
+            <div *ngFor="let layer of concept.layers; let i = index">
+              <h6>Layer {{ i + 1 }}</h6>
+              <p><strong>What:</strong> {{ layer.What }}</p>
+              <p><strong>Why:</strong> {{ layer.Why }}</p>
+              <p><strong>How:</strong> {{ layer.How }}</p>
             </div>
           </div>
         </div>
