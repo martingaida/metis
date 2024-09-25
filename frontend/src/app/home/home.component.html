@@ -13,9 +13,9 @@
         <div *ngFor="let concept of topic.concepts">
           <h4>{{ concept.concept }}</h4>
           <div *ngFor="let layer of concept.layers">
-            <p><strong>What:</strong> {{ layer.What }}</p>
-            <p><strong>Why:</strong> {{ layer.Why }}</p>
-            <p><strong>How:</strong> {{ layer.How }}</p>
+            <p>{{ layer.What }}</p>
+            <p>{{ layer.Why }}</p>
+            <p>{{ layer.How }}</p>
           </div>
         </div>
       </div>
