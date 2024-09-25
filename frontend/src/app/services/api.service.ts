@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Layer {
@@ -31,6 +31,14 @@ export class ApiService {
   ) {}
 
   explainText(text: string): Observable<ExplanationResponse> {
-    return this.http.post<ExplanationResponse>(`${this.apiUrl}/api/explain`, { text });
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post<ExplanationResponse>(
+      `${this.apiUrl}/api/explain`,
+      { text },
+      { headers, withCredentials: true }
+    );
   }
 }

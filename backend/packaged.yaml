@@ -5,14 +5,24 @@ Parameters:
     Type: String
     Description: URL for the LLM microservice
 Resources:
+  BackendApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: '''POST,OPTIONS'''
+        AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+        AllowOrigin: '''*'''
+    Metadata:
+      SamResourceId: BackendApi
   BackendFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: main
       Runtime: provided.al2
-      CodeUri: s3://metis-backend-w8ej736hj9/88346a4288a01793450ce9ac538e3ecb
+      CodeUri: s3://metis-backend-w8ej736hj9/97ba9a88eeda4ee8d40dd16a229ffd02
       MemorySize: 128
-      Timeout: 900
+      Timeout: 600
       Environment:
         Variables:
           LLM_MICROSERVICE_URL:
@@ -21,12 +31,21 @@ Resources:
         ExplainApi:
           Type: Api
           Properties:
+            RestApiId:
+              Ref: BackendApi
             Path: /api/explain
-            Method: post
+            Method: POST
+        OptionsApi:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: BackendApi
+            Path: /api/explain
+            Method: OPTIONS
     Metadata:
       SamResourceId: BackendFunction
 Outputs:
   BackendApiUrl:
     Description: API Gateway endpoint URL for the backend
     Value:
-      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/explain
+      Fn::Sub: https://${BackendApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/explain

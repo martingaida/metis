@@ -133,6 +133,11 @@ deploy_backend() {
     echo "Building Go Lambda function..."
     cd src
     GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+    if [ $? -ne 0 ]; then
+        echo "Error: Go build failed"
+        exit 1
+    fi    
+    mv bootstrap ..
     cd ..
     
     # Use SAM to package and deploy
