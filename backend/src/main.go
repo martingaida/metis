@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -35,15 +37,19 @@ type Response struct {
 	Explanations []Topic `json:"explanations"`
 }
 
-func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	log.Printf("Received request: Method=%s, Body=%s", req.RequestContext.HTTP.Method, req.Body)
+type LLMResponse struct {
+	Explanations []Topic `json:"explanations"`
+}
 
-	if req.RequestContext.HTTP.Method == "OPTIONS" {
+func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	log.Printf("Received request: Method=%s, Body=%s", request.RequestContext.HTTP.Method, request.Body)
+
+	if request.RequestContext.HTTP.Method == "OPTIONS" {
 		return handleOptions()
 	}
 
-	var request Request
-	err := json.Unmarshal([]byte(req.Body), &request)
+	var requestStruct Request
+	err := json.Unmarshal([]byte(request.Body), &requestStruct)
 	if err != nil {
 		log.Printf("Error unmarshaling request body: %v", err)
 		return events.LambdaFunctionURLResponse{
@@ -53,9 +59,9 @@ func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 		}, nil
 	}
 
-	log.Printf("Parsed request: %+v", request)
+	log.Printf("Parsed request: %+v", requestStruct)
 
-	if request.Text == "" {
+	if requestStruct.Text == "" {
 		log.Println("Text field is empty")
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
@@ -76,7 +82,7 @@ func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 		}, nil
 	}
 
-	llmResponse, err := callLLMMicroservice(llmServiceURL, request.Text)
+	llmResponse, err := callLLMMicroservice(llmServiceURL + "?text=" + url.QueryEscape(requestStruct.Text))
 
 	if err != nil {
 		log.Printf("Error calling LLM microservice: %v", err)
@@ -89,9 +95,18 @@ func handleRequest(req events.LambdaFunctionURLRequest) (events.LambdaFunctionUR
 
 	log.Printf("LLM microservice response: %s", llmResponse)
 
+	responseJSON, err := json.Marshal(llmResponse)
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 500,
+			Body:       "Error marshaling response: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
 	return events.LambdaFunctionURLResponse{
 		StatusCode: 200,
-		Body:       llmResponse,
+		Body:       string(responseJSON),
 		Headers:    getCORSHeaders(),
 	}, nil
 }
@@ -111,29 +126,25 @@ func getCORSHeaders() map[string]string {
 	}
 }
 
-func callLLMMicroservice(url, text string) (string, error) {
+func callLLMMicroservice(text string) (LLMResponse, error) {
 	requestBody, err := json.Marshal(map[string]string{"text": text})
 	if err != nil {
-		return "", fmt.Errorf("error marshaling request body: %v", err)
+		return LLMResponse{}, fmt.Errorf("error marshaling request: %v", err)
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	resp, err := http.Post(os.Getenv("LLM_MICROSERVICE_URL"), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "", fmt.Errorf("error sending request: %v", err)
+		return LLMResponse{}, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	var response struct {
-		Message   string `json:"message"`
-		RequestID string `json:"requestId"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return "", fmt.Errorf("error decoding response: %v", err)
+	var llmResponse LLMResponse
+	err = json.NewDecoder(resp.Body).Decode(&llmResponse)
+	if err != nil {
+		return LLMResponse{}, fmt.Errorf("error decoding response: %v", err)
 	}
 
-	// Here, instead of polling, we're just returning a message that processing has started
-	// In a real-world scenario, you might implement a way to check the status or retrieve the result later
-	return fmt.Sprintf("Processing started. Request ID: %s", response.RequestID), nil
+	return llmResponse, nil
 }
 
 func main() {

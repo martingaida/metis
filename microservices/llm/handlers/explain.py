@@ -125,6 +125,6 @@ def process_text(text):
 def generate_response(text):
     try:
         result = process_text(text)
-        return result
+        return { "explanations": result}
     except Exception as e:
         return f"Error: {str(e)}"
