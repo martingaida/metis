@@ -3,9 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Layer {
-  What: string;
-  Why: string;
-  How: string;
+  what: string;
+  why: string;
+  how: string;
 }
 
 export interface Concept {
@@ -21,7 +21,7 @@ export interface Topic {
 export interface ExplanationResponse {
   explanations: {
     topics: Topic[];
-    most_significant_takeaway: string;
+    mainTakeaway: string;
   };
 }
 
