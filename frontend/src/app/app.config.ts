@@ -8,6 +8,9 @@ import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { ApiService } from './services/api.service';
 import { environment } from '../environments/environment';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,6 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideStore(),
     provideEffects(),
+    provideAnimations(),
+    MatProgressBarModule,
     provideStoreDevtools({ maxAge: 25 }),
     { provide: 'API_URL', useValue: environment.apiUrl },
     ApiService

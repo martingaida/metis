@@ -1,16 +1,20 @@
 <div class="container">
   <div class="explain-wrapper">
     <textarea 
-      class="form-control custom-textarea" 
+      class="custom-textarea" 
       id="textInput" 
       rows="9" 
       [(ngModel)]="inputText"
       placeholder="Enter text to explain"
+      [disabled]="isLoading"
     ></textarea>
-    <button class="btn custom-btn" (click)="explainText()">Please Explain</button>
+    <button class="custom-btn" (click)="explainText()" [disabled]="isLoading">
+        {{ isLoading ? 'Thinking...' : 'Please Explain' }}
+    </button>
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
     <div *ngIf="explanations.length > 0" class="mt-4">
       <div *ngIf="mainTakeaway" class="mb-4">
-        <h4>Main Takeaway:</h4>
+        <h2>Main Takeaway:</h2>
         <p>{{ mainTakeaway }}</p>
       </div>
       <div *ngFor="let topic of explanations">
