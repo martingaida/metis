@@ -24,7 +24,7 @@ export class ExplainComponent {
       (response) => {
         console.log('Received response:', response);
         this.explanations = response.explanations.topics;
-        this.mainTakeaway = response.explanations.mainTakeaway;
+        this.mainTakeaway = response.explanations.main_takeaway;
       },
       (error) => {
         console.error('Error:', error);

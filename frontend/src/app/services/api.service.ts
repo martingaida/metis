@@ -21,7 +21,7 @@ export interface Topic {
 export interface ExplanationResponse {
   explanations: {
     topics: Topic[];
-    mainTakeaway: string;
+    main_takeaway: string;
   };
 }
 
