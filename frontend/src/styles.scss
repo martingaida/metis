@@ -1,1 +1,6 @@
 @import './styles/utilities';
+
+.mat-mdc-progress-bar {
+    --mdc-linear-progress-active-indicator-color: #000000 !important;
+    --mdc-linear-progress-track-color: #e0e0e0 !important;
+}
