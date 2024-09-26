@@ -38,10 +38,11 @@ def generate_structured_explanation(text):
         1. Identify the main topics discussed in the text. The number of topics should reflect the content; there may be one dominant topic or multiple important topics.
         2. For each topic, list the key concepts. The number of concepts should be appropriate to fully represent the topic without redundancy.
         3. For each concept, provide a three-layered explanation using the 'What, Why, How' framework:
-        - Layer 1: Simple explanation for beginners
-        - Layer 2: Detailed explanation with examples
-        - Layer 3: Technical explanation for advanced readers
-        4. Provide a short, concise summary (1-3 sentences) that captures the most significant takeaway from the entire text.
+        - Layer 1: Provide a simple explanation for beginners. Be descriptive and use multiple sentences to explain the concept, why it is important, and how it works in layman's terms.
+        - Layer 2: Provide a more detailed explanation with examples, analogies, or practical applications to illustrate the concept. Ensure it includes why it is significant in real-world scenarios and how it functions in practice.
+        - Layer 3: Offer a thorough, technical explanation for advanced readers. Include technical definitions, components, and an in-depth exploration of how it operates on a technical level. Use examples from the field and explore its technical implications.
+
+        4. Provide a detailed summary that captures the most significant takeaway from the entire text.
 
         Present the response in the following JSON format:
 
@@ -55,23 +56,23 @@ def generate_structured_explanation(text):
                     "layers": [
                         {{
                         "layer_1": {{
-                            "what": "Simple explanation of what it is",
-                            "why": "Simple explanation of why it's important",
-                            "how": "Simple explanation of how it works"
+                            "what": "Detailed, simple explanation of what it is using multiple sentences.",
+                            "why": "Detailed explanation of why it's important using multiple sentences.",
+                            "how": "Detailed explanation of how it works using multiple sentences."
                         }}
                         }},
                         {{
                         "layer_2": {{
-                            "what": "More detailed explanation with examples",
-                            "why": "Detailed explanation of its significance",
-                            "how": "More detailed explanation of its mechanics"
+                            "what": "More detailed explanation with multiple examples and practical applications.",
+                            "why": "In-depth explanation of its significance in real-world scenarios.",
+                            "how": "Detailed explanation of its mechanics with practical examples."
                         }}
                         }},
                         {{
                         "layer_3": {{
-                            "what": "Technical definition and components",
-                            "why": "In-depth explanation of its importance",
-                            "how": "Technical explanation of its workings"
+                            "what": "Thorough technical definition with technical components.",
+                            "why": "In-depth explanation of its importance on a technical level.",
+                            "how": "Technical explanation of how it operates with advanced examples."
                         }}
                         }}
                     ]
@@ -79,12 +80,13 @@ def generate_structured_explanation(text):
                 ]
                 }}
             ],
-            "main_takeaway": "A concise summary capturing the most important point from the entire text."
+            "main_takeaway": "A detailed summary capturing the most important point from the entire text."
         }}
 
         Text to analyze:
         {text}
     """
+
 
     completion = client.beta.chat.completions.parse(
         model="gpt-4o-2024-08-06",
