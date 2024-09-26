@@ -8,13 +8,25 @@ import { ExplainComponent } from './explain/explain.component';
   standalone: true,
   imports: [CommonModule, RouterOutlet, ExplainComponent],
   template: `
-    <main class="container">
-      <h1>PLEX</h1>
-      <h4>Please Explain</h4>
+    <div class="app-container">
+      <img src="./assets/images/plex-logo.svg" alt="PLEX Logo" class="logo">
       <app-explain></app-explain>
-    </main>
+    </div>
   `,
-  styles: [],
+  styles: [`
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+    .logo {
+      max-width: 200px;
+      width: 100%;
+      height: auto;
+      margin-bottom: 2rem;
+    }
+  `],
 })
 export class AppComponent {
   title = 'PLEX';

@@ -1,25 +1,30 @@
-<div class="container mt-5">
-    <div class="mb-3">
-      <label for="textInput" class="form-label">Enter text to explain:</label>
-      <textarea class="form-control" id="textInput" rows="3" [(ngModel)]="inputText"></textarea>
-    </div>
-    <button class="btn btn-primary" (click)="explainText()">Explain</button>
-    <div *ngIf="explanations.length > 0" class="mt-3">
-        <div *ngIf="mainTakeaway" class="mt-3">
-            <h3>Main Takeaway:</h3>
-            <p>{{ mainTakeaway }}</p>
-        </div>
-        <div *ngFor="let topic of explanations">
-            <h2>Explanation:</h2>
-            <h3>{{ topic.topic }}</h3>
-            <div *ngFor="let concept of topic.concepts">
-            <h4>{{ concept.concept }}</h4>
-            <div *ngFor="let layer of concept.layers">
-                <p>{{ layer.what }}</p>
-                <p>{{ layer.why }}</p>
-                <p>{{ layer.how }}</p>
-            </div>
+<div class="container">
+  <div class="explain-wrapper">
+    <textarea 
+      class="form-control custom-textarea" 
+      id="textInput" 
+      rows="9" 
+      [(ngModel)]="inputText"
+      placeholder="Enter text to explain"
+    ></textarea>
+    <button class="btn custom-btn" (click)="explainText()">Please Explain</button>
+    <div *ngIf="explanations.length > 0" class="mt-4">
+      <div *ngIf="mainTakeaway" class="mb-4">
+        <h4>Main Takeaway:</h4>
+        <p>{{ mainTakeaway }}</p>
+      </div>
+      <div *ngFor="let topic of explanations">
+        <h2>Explanation:</h2>
+        <h3>{{ topic.topic }}</h3>
+        <div *ngFor="let concept of topic.concepts">
+          <h4>{{ concept.concept }}</h4>
+          <div *ngFor="let layer of concept.layers">
+            <p>{{ layer.what }}</p>
+            <p>{{ layer.why }}</p>
+            <p>{{ layer.how }}</p>
+          </div>
         </div>
       </div>
     </div>
+  </div>
 </div>
