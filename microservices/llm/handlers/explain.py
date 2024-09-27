@@ -33,16 +33,37 @@ class StructuredExplanation(BaseModel):
 
 
 def generate_structured_explanation(text):
+    """
+    Generate a structured explanation of the given text using OpenAI's GPT model.
+
+    This function analyzes the input text and produces a multi-layered explanation
+    of the main topics and concepts within it. The explanation is structured into
+    topics, concepts, and three layers of detail for each concept.
+
+    Args:
+        text (str): The input text to be analyzed and explained.
+
+    Returns:
+        StructuredExplanation: A structured object containing the explanation,
+        including topics, concepts, and layered explanations.
+
+    Raises:
+        OpenAIError: If there's an issue with the OpenAI API call.
+        JSONDecodeError: If the API response cannot be parsed as JSON.
+    """
+    
     prompt = f"""Analyze the following text and provide a structured explanation:
 
         1. Identify the main topics discussed in the text. The number of topics should reflect the content; there may be one dominant topic or multiple important topics.
         2. For each topic, list the key concepts. The number of concepts should be appropriate to fully represent the topic without redundancy.
-        3. For each concept, provide a three-layered explanation using the 'What, Why, How' framework:
+        3. For each concept, provide a three-layered explanation using the 'What, Why, How' framework. Ensure that each layer builds upon the previous one, diving deeper without repeating information:
         - Layer 1: Provide a simple explanation for beginners. Be descriptive and use multiple sentences to explain the concept, why it is important, and how it works in layman's terms.
-        - Layer 2: Provide a more detailed explanation with examples, analogies, or practical applications to illustrate the concept. Ensure it includes why it is significant in real-world scenarios and how it functions in practice.
-        - Layer 3: Offer a thorough, technical explanation for advanced readers. Include technical definitions, components, and an in-depth exploration of how it operates on a technical level. Use examples from the field and explore its technical implications.
+        - Layer 2: Build upon Layer 1 by providing a more detailed explanation with examples, analogies, or practical applications to illustrate the concept. Ensure it includes why it is significant in real-world scenarios and how it functions in practice. Introduce more complex aspects not covered in Layer 1.
+        - Layer 3: Offer a thorough, technical explanation for advanced readers. Include technical definitions, components, and an in-depth exploration of how it operates on a technical level. Use examples from the field and explore its technical implications not discussed in previous layers.
 
-        4. Provide a detailed summary that captures the most significant takeaway from the entire text.
+        Ensure that the explanations across layers flow naturally, with each layer adding new information and insights rather than repeating previous content.
+
+        4. Provide a short summary that captures the most significant takeaway from the entire text.
 
         Present the response in the following JSON format:
 
@@ -56,23 +77,23 @@ def generate_structured_explanation(text):
                     "layers": [
                         {{
                         "layer_1": {{
-                            "what": "Detailed, simple explanation of what it is using multiple sentences.",
-                            "why": "Detailed explanation of why it's important using multiple sentences.",
-                            "how": "Detailed explanation of how it works using multiple sentences."
+                            "what": "Basic explanation of what it is.",
+                            "why": "Simple explanation of why it's important.",
+                            "how": "Basic explanation of how it works."
                         }}
                         }},
                         {{
                         "layer_2": {{
-                            "what": "More detailed explanation with multiple examples and practical applications.",
-                            "why": "In-depth explanation of its significance in real-world scenarios.",
-                            "how": "Detailed explanation of its mechanics with practical examples."
+                            "what": "More detailed explanation, building on the previous layer",
+                            "why": "Deeper exploration of its significance, with examples.",
+                            "how": "More complex explanation of its mechanics, with practical applications."
                         }}
                         }},
                         {{
                         "layer_3": {{
-                            "what": "Thorough technical definition with technical components.",
+                            "what": "Advanced technical definition and components.",
                             "why": "In-depth explanation of its importance on a technical level.",
-                            "how": "Technical explanation of how it operates with advanced examples."
+                            "how": "Comprehensive technical explanation of its operation, with advanced examples."
                         }}
                         }}
                     ]
@@ -80,7 +101,7 @@ def generate_structured_explanation(text):
                 ]
                 }}
             ],
-            "main_takeaway": "A detailed summary capturing the most important point from the entire text."
+            "main_takeaway": "A short summary capturing the most important point from the entire text."
         }}
 
         Text to analyze:
@@ -122,8 +143,8 @@ def generate_response(text):
 #         basis. As occurred the development of other emerging technologies,
 #         such as the introduction of electricity in the early 20th century, AI
 #         causes both fascination and fear. Following the advice of the
-#         philosopher R.W. Emerson's advice ‘the knowledge is the antidote
-#         to fear’, this paper seeks to contribute to the dissemination of
+#         philosopher R.W. Emerson's advice 'the knowledge is the antidote
+#         to fear', this paper seeks to contribute to the dissemination of
 #         knowledge about AI. To this end, it reflects on the following
 #         questions: the origins of AI, its possible future evolution, its ability
 #         to show feelings, the associated threats and dangers, and the
@@ -150,7 +171,7 @@ def generate_response(text):
 #         major drawbacks stand out. One of the most discussed is the
 #         destruction of jobs, requiring the development of new training and
 #         adaptation strategies. In addition, there exists a propagandistic misuse
-#         of the term ‘AI’, attributing it to systems that actually do not comply
+#         of the term 'AI', attributing it to systems that actually do not comply
 #         with its characteristics. Another relevant problem is the global
 #         monitoring and control of data, which makes it possible to extract 
 #         Five questions and answers about artificial intelligence 15

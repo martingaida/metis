@@ -121,3 +121,17 @@
         max-width: 90vw;
     }
 }
+
+mat-icon {
+    margin-top: 16px;
+    margin-right: 8px;
+}
+
+.mat-tab-label mat-icon {
+  margin-right: 8px;
+  font-size: 24px;
+}
+
+mat-icon {
+  vertical-align: middle;
+}

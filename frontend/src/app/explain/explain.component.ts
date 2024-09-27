@@ -2,13 +2,27 @@ import { ApiService, Topic, Concept, Layer } from '../services/api.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Component, ViewChild, ElementRef } from '@angular/core';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-explain',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatProgressBarModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    MatProgressBarModule, 
+    MatCardModule, 
+    MatExpansionModule, 
+    MatTabsModule, 
+    MatTooltipModule, 
+    MatIconModule
+  ],
   templateUrl: './explain.component.html',
   styleUrls: ['./explain.component.scss'],
   animations: [
@@ -26,7 +40,7 @@ export class ExplainComponent {
   mainTakeaway: string = '';
   totalTime: number = 0;
   isLoading = false;
-  isExplanationVisible = false; // Add this line
+  isExplanationVisible = false;
 
   constructor(private apiService: ApiService) {}
 

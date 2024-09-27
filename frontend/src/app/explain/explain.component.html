@@ -13,22 +13,75 @@
     </button>
     <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
     <div *ngIf="explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
-        <div *ngIf="mainTakeaway" class="mb-4">
-            <h2>Main Takeaway:</h2>
-            <p>{{ mainTakeaway }}</p>
-        </div>
-        <div *ngFor="let topic of explanations">
-            <h2>Explanation:</h2>
-            <h3>{{ topic.topic }}</h3>
-            <div *ngFor="let concept of topic.concepts">
-                <h4>{{ concept.concept }}</h4>
-            <div *ngFor="let layer of concept.layers">
-                <p>{{ layer.what }}</p>
-                <p>{{ layer.why }}</p>
-                <p>{{ layer.how }}</p>
-            </div>
-        </div>
+
+        <!-- Gist Card -->
+        <mat-card *ngIf="mainTakeaway" class="mb-4">
+            <mat-card-header>
+                <mat-card-title>Gist</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p>{{ mainTakeaway }}</p>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Breakdown -->
+        <mat-accordion>
+            <mat-expansion-panel *ngFor="let topic of explanations">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>{{ topic.topic }}</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div *ngFor="let concept of topic.concepts">
+                    <mat-card class="mb-3">
+                    <mat-card-header>
+                        <mat-card-title>{{ concept.concept }}</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <mat-tab-group>
+                            <mat-tab>
+                                <ng-template mat-tab-label>
+                                    <mat-icon matTooltip="Basic">school</mat-icon>
+                                </ng-template>
+                                <ng-template matTabContent>
+                                    <mat-icon>help_outline</mat-icon>
+                                    <p>{{ concept.layers[0].what }}</p>
+                                    <mat-icon>lightbulb_outline</mat-icon>
+                                    <p>{{ concept.layers[0].why }}</p>
+                                    <mat-icon>settings</mat-icon>
+                                    <p>{{ concept.layers[0].how }}</p>
+                                </ng-template>
+                            </mat-tab>
+                            <mat-tab>
+                                <ng-template mat-tab-label>
+                                    <mat-icon matTooltip="Detailed">psychology</mat-icon>
+                                </ng-template>
+                                <ng-template matTabContent>
+                                    <mat-icon>help_outline</mat-icon>
+                                    <p>{{ concept.layers[1].what }}</p>
+                                    <mat-icon>lightbulb_outline</mat-icon>
+                                    <p>{{ concept.layers[1].why }}</p>
+                                    <mat-icon>settings</mat-icon>
+                                    <p>{{ concept.layers[1].how }}</p>
+                                </ng-template>
+                            </mat-tab>
+                            <mat-tab>
+                                <ng-template mat-tab-label>
+                                    <mat-icon matTooltip="Advanced">rocket_launch</mat-icon>
+                                </ng-template>
+                                <ng-template matTabContent>
+                                    <mat-icon>help_outline</mat-icon>
+                                    <p>{{ concept.layers[2].what }}</p>
+                                    <mat-icon>lightbulb_outline</mat-icon>
+                                    <p>{{ concept.layers[2].why }}</p>
+                                    <mat-icon>settings</mat-icon>
+                                    <p>{{ concept.layers[2].how }}</p>
+                                </ng-template>
+                            </mat-tab>
+                        </mat-tab-group>
+                    </mat-card-content>
+                    </mat-card>
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
       </div>
-    </div>
   </div>
 </div>
