@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  metis-backend
+
+  Sample SAM Template for metis-backend
+
+Globals:
+  Function:
+    Timeout: 900
+    MemorySize: 128
+
+Parameters:
+  LLMServiceUrl:
+    Type: String
+    Description: The URL of the LLM service
+
+Resources:
+  BackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          LLM_MICROSERVICE_URL: !Ref LLMServiceUrl
+
+  BackendFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref BackendFunction
+      AuthType: NONE
+
+  BackendFunctionUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BackendFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+Outputs:
+  BackendFunction:
+    Description: "Backend Lambda Function ARN"
+    Value: !GetAtt BackendFunction.Arn
+  BackendFunctionUrl:
+    Description: "Backend Function URL"
+    Value: !GetAtt BackendFunctionUrl.FunctionUrl
