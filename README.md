@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# metis
-=======
 # Metis: Multi-Layered Concept Explanation System
 
 ## Purpose
@@ -45,4 +42,3 @@ This structured approach allows users to grasp complex information at their pref
 5. The frontend presents the multi-layered explanation to the user in an interactive format.
 
 This architecture enables Metis to provide fast, scalable, and comprehensive explanations of complex subjects, leveraging the strengths of each technology in our stack.
->>>>>>> ddb9400423df2da42dff9107ca11e16756fdb0b7
