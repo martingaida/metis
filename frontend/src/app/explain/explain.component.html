@@ -3,30 +3,30 @@
     <textarea 
       class="custom-textarea" 
       id="textInput" 
-      rows="9" 
+      rows="6" 
       [(ngModel)]="inputText"
-      placeholder="Enter text to explain"
+      placeholder="Enter a topic, text, or concept to explain"
       [disabled]="isLoading"
     ></textarea>
     <button class="custom-btn" (click)="explainText()" [disabled]="isLoading">
-        {{ isLoading ? 'Thinking...' : 'Please Explain' }}
+        {{ isLoading ? 'Thinking...' : 'Explain' }}
     </button>
     <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
-    <div *ngIf="explanations.length > 0" class="mt-4">
-      <div *ngIf="mainTakeaway" class="mb-4">
-        <h2>Main Takeaway:</h2>
-        <p>{{ mainTakeaway }}</p>
-      </div>
-      <div *ngFor="let topic of explanations">
-        <h2>Explanation:</h2>
-        <h3>{{ topic.topic }}</h3>
-        <div *ngFor="let concept of topic.concepts">
-          <h4>{{ concept.concept }}</h4>
-          <div *ngFor="let layer of concept.layers">
-            <p>{{ layer.what }}</p>
-            <p>{{ layer.why }}</p>
-            <p>{{ layer.how }}</p>
-          </div>
+    <div *ngIf="explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
+        <div *ngIf="mainTakeaway" class="mb-4">
+            <h2>Main Takeaway:</h2>
+            <p>{{ mainTakeaway }}</p>
+        </div>
+        <div *ngFor="let topic of explanations">
+            <h2>Explanation:</h2>
+            <h3>{{ topic.topic }}</h3>
+            <div *ngFor="let concept of topic.concepts">
+                <h4>{{ concept.concept }}</h4>
+            <div *ngFor="let layer of concept.layers">
+                <p>{{ layer.what }}</p>
+                <p>{{ layer.why }}</p>
+                <p>{{ layer.how }}</p>
+            </div>
         </div>
       </div>
     </div>
