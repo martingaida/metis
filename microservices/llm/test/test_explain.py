@@ -1,67 +1,81 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from handlers import explain
-
+import json
+from handlers import explain  # Assuming the file is named explain.py
+from openai import OpenAIError
 
 class TestExplain(unittest.TestCase):
 
-    @patch('handlers.explain.client.chat.completions.create')
-    def test_synthesize_major_topics(self, mock_create):
+    @patch('handlers.explain.client.beta.chat.completions.parse')
+    def test_generate_structured_explanation_success(self, mock_parse):
+        # Mocking the response from OpenAI API with a structured explanation
         mock_response = MagicMock()
-        mock_response.choices[0].message.content = "Topic 1\nTopic 2"
-        mock_create.return_value = mock_response
-
-        result = explain.synthesize_major_topics("Sample text")
-        self.assertEqual(result, ["Topic 1", "Topic 2"])
-        mock_create.assert_called_once()
-
-    @patch('handlers.explain.client.chat.completions.create')
-    def test_synthesize_major_concepts(self, mock_create):
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "Concept 1\nConcept 2"
-        mock_create.return_value = mock_response
-
-        result = explain.synthesize_major_concepts("Sample topic")
-        self.assertEqual(result, ["Concept 1", "Concept 2"])
-        mock_create.assert_called_once()
-
-    @patch('handlers.explain.client.chat.completions.create')
-    def test_generate_layered_explanation(self, mock_create):
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "Layer explanation"
-        mock_create.return_value = mock_response
-
-        result = explain.generate_layered_explanation("Sample concept")
-        self.assertEqual(len(result), 3)
-        self.assertEqual(result[0], "Layer explanation")
-        self.assertEqual(mock_create.call_count, 3)
-
-    @patch('handlers.explain.synthesize_major_topics')
-    @patch('handlers.explain.synthesize_major_concepts')
-    @patch('handlers.explain.generate_layered_explanation')
-    def test_process_text(self, mock_generate, mock_concepts, mock_topics):
-        mock_topics.return_value = ["Topic 1"]
-        mock_concepts.return_value = ["Concept 1"]
-        mock_generate.return_value = ["Layer 1", "Layer 2", "Layer 3"]
-
-        result = explain.process_text("Sample text")
-        expected_result = [
-            {
-                "topic": "Topic 1",
-                "concepts": [
+        mock_response.choices = [
+            MagicMock(message=MagicMock(content=json.dumps({
+                "topics": [
                     {
-                        "concept": "Concept 1",
-                        "layers": [
-                            {"layer_1": "Layer 1"},
-                            {"layer_2": "Layer 2"},
-                            {"layer_3": "Layer 3"}
+                        "topic": "Test Topic",
+                        "concepts": [
+                            {
+                                "concept": "Test Concept",
+                                "layers": [
+                                    {
+                                        "what": "Test what",
+                                        "why": "Test why",
+                                        "how": "Test how"
+                                    },
+                                    {
+                                        "what": "Test what 2",
+                                        "why": "Test why 2",
+                                        "how": "Test how 2"
+                                    },
+                                    {
+                                        "what": "Test what 3",
+                                        "why": "Test why 3",
+                                        "how": "Test how 3"
+                                    }
+                                ]
+                            }
                         ]
                     }
-                ]
-            }
+                ],
+                "main_takeaway": "Test takeaway"
+            })))
         ]
-        self.assertEqual(result, expected_result)
+        mock_parse.return_value = mock_response
 
+        # Call the function
+        result = explain.generate_structured_explanation("Test input")
+
+        # Assert the result
+        self.assertEqual(len(result.topics), 1)
+        self.assertEqual(result.topics[0].topic, "Test Topic")
+        self.assertEqual(len(result.topics[0].concepts), 1)
+        self.assertEqual(result.topics[0].concepts[0].concept, "Test Concept")
+        self.assertEqual(len(result.topics[0].concepts[0].layers), 3)
+        self.assertEqual(result.topics[0].concepts[0].layers[0].what, "Test what")
+        self.assertEqual(result.topics[0].concepts[0].layers[1].what, "Test what 2")
+        self.assertEqual(result.main_takeaway, "Test takeaway")
+
+    @patch('handlers.explain.client.beta.chat.completions.parse')
+    def test_generate_structured_explanation_openai_error(self, mock_parse):
+        # Simulate an OpenAIError
+        mock_parse.side_effect = OpenAIError("API Error")
+
+        # Assert that the function raises the error
+        with self.assertRaises(OpenAIError):
+            explain.generate_structured_explanation("Test input")
+
+    @patch('handlers.explain.client.beta.chat.completions.parse')
+    def test_generate_structured_explanation_json_error(self, mock_parse):
+        # Simulate invalid JSON response
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock(message=MagicMock(content="Invalid JSON"))]
+        mock_parse.return_value = mock_response
+
+        # Assert that the function raises a JSONDecodeError
+        with self.assertRaises(json.JSONDecodeError):
+            explain.generate_structured_explanation("Test input")
 
 if __name__ == '__main__':
     unittest.main()
