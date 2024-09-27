@@ -1,19 +1,35 @@
 <div class="container">
   <div class="explain-wrapper">
-    <textarea 
-      class="custom-textarea" 
-      id="textInput" 
-      rows="6" 
-      [(ngModel)]="inputText"
-      placeholder="Enter a topic, text, or concept to explain"
-      [disabled]="isLoading"
-    ></textarea>
-    <button class="custom-btn" (click)="explainText()" [disabled]="isLoading">
-        {{ isLoading ? 'Thinking...' : 'Explain' }}
-    </button>
+    <!-- Mode toggle -->
+    <mat-button-toggle-group [(ngModel)]="mode" class="mode-toggle">
+        <mat-button-toggle value="arXiv">arXiv</mat-button-toggle>
+        <mat-button-toggle value="Custom">Custom</mat-button-toggle>
+    </mat-button-toggle-group>
+    <!-- arXiv mode -->
+    <ng-container *ngIf="mode === 'arXiv'">
+        <div class="arxiv-buttons">
+          <button mat-raised-button *ngFor="let paper of arXivPapers" (click)="explainArXiv(paper.id)">
+            {{ paper.title }}
+          </button>
+        </div>
+    </ng-container>
+    <!-- Custom mode -->
+    <ng-container *ngIf="mode === 'Custom'">
+        <textarea 
+        class="custom-textarea" 
+        id="textInput" 
+        rows="6" 
+        [(ngModel)]="inputText"
+        placeholder="Enter a topic, text, or concept to explain"
+        [disabled]="isLoading"
+        ></textarea>
+        <button class="custom-btn" (click)="explainText()" [disabled]="isExplainDisabled">
+            {{ isLoading ? 'Thinking...' : 'Explain' }}
+        </button>
+    </ng-container>
+    <!-- Explanation -->
     <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
     <div *ngIf="explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
-
         <!-- Gist Card -->
         <mat-card *ngIf="mainTakeaway" class="mb-4">
             <mat-card-header>
@@ -23,7 +39,6 @@
                 <p>{{ mainTakeaway }}</p>
             </mat-card-content>
         </mat-card>
-
         <!-- Breakdown -->
         <mat-accordion>
             <mat-expansion-panel *ngFor="let topic of explanations">

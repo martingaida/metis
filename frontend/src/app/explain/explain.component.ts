@@ -9,6 +9,15 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatButtonModule } from '@angular/material/button';
+
+interface ArXivPaper {
+  id: string;
+  title: string;
+  abstract: string;
+  conclusion: string;
+}
 
 @Component({
   selector: 'app-explain',
@@ -21,7 +30,9 @@ import { FormsModule } from '@angular/forms';
     MatExpansionModule, 
     MatTabsModule, 
     MatTooltipModule, 
-    MatIconModule
+    MatIconModule,
+    MatButtonToggleModule,
+    MatButtonModule
   ],
   templateUrl: './explain.component.html',
   styleUrls: ['./explain.component.scss'],
@@ -41,12 +52,23 @@ export class ExplainComponent {
   totalTime: number = 0;
   isLoading = false;
   isExplanationVisible = false;
+  mode: 'arXiv' | 'Custom' = 'arXiv';
+  arXivPapers: ArXivPaper[] = [
+    { id: '2303.08774', title: 'GPT-4 Technical Report', abstract: '', conclusion: '' },
+    { id: '2303.12712', title: 'Sparks of Artificial General Intelligence', abstract: '', conclusion: '' },
+  ];
 
   constructor(private apiService: ApiService) {}
 
   @ViewChild('explanationContainer') private explanationContainer!: ElementRef;
 
+  get isExplainDisabled(): boolean {
+    return this.isLoading || !this.inputText.trim();
+  }
+
   explainText() {
+    if (this.isExplainDisabled) return;
+
     this.isLoading = true;
     this.isExplanationVisible = false; // Hide explanation while loading
     console.log('Explaining text:', this.inputText);
@@ -71,6 +93,14 @@ export class ExplainComponent {
   private scrollToExplanation() {
     if (this.explanationContainer) {
       this.explanationContainer.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  explainArXiv(paperId: string) {
+    const paper = this.arXivPapers.find(p => p.id === paperId);
+    if (paper) {
+      this.inputText = paper.abstract + paper.conclusion;
+      this.explainText();
     }
   }
 }
