@@ -144,15 +144,13 @@ mat-icon {
         border-radius: 16px;
         overflow: hidden;
         border: 1px solid rgba(0, 0, 0, 0.12);
+        box-shadow: none;
 
         .mat-button-toggle {
-            border-radius: 0;
+            border-radius: 16px;
             height: 32px;
-            border-right: 1px solid rgba(0, 0, 0, 0.12);
-
-            &:last-child {
-                border-right: none;
-            }
+            border: none;
+            overflow: hidden;
 
             .mat-button-toggle-label-content {
                 padding: 0 12px;

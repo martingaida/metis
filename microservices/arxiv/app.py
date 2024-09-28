@@ -4,7 +4,7 @@ import json
 
 def lambda_handler(event, context):
     scraper = ArXivClient()
-    papers = scraper.get_random_papers(num_categories=4, papers_per_category=1)
+    papers = scraper.get_random_papers(num_categories=3, papers_per_category=1)
     print(f'Response: {papers}')
 
     return {
