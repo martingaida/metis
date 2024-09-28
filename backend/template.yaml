@@ -14,6 +14,9 @@ Parameters:
   LLMServiceUrl:
     Type: String
     Description: The URL of the LLM service
+  ArXivServiceUrl:
+    Type: String
+    Description: The URL of the arXiv service
 
 Resources:
   BackendFunction:
@@ -27,6 +30,7 @@ Resources:
       Environment:
         Variables:
           LLM_MICROSERVICE_URL: !Ref LLMServiceUrl
+          ARXIV_MICROSERVICE_URL: !Ref ArXivServiceUrl
 
   BackendFunctionUrl:
     Type: AWS::Lambda::Url

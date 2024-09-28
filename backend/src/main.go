@@ -62,15 +62,38 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		return handleOptions()
 	}
 
-	switch request.RequestContext.HTTP.Path {
-	case "/api/explain":
+	// Parse request body
+	var requestBody map[string]string
+	err := json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		log.Printf("Error parsing request body: %v", err)
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Invalid request body",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	// Get the action from the body
+	action, exists := requestBody["action"]
+	if !exists || action == "" {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Action field is required",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	// Handle the action
+	switch action {
+	case "explain":
 		return handleExplain(request)
-	case "/api/arxiv":
+	case "arxiv":
 		return handleGetArXivPapers(request)
 	default:
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 404,
-			Body:       "Not Found",
+			Body:       "Action not recognized",
 			Headers:    getCORSHeaders(),
 		}, nil
 	}
@@ -121,22 +144,43 @@ func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFuncti
 }
 
 func handleGetArXivPapers(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	papers, err := callArXivMicroservice()
+	// Parse the request body to get the action
+	var requestBody map[string]string
+	err := json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Invalid request body: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	action, exists := requestBody["action"]
+	if !exists || action != "arxiv" {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Action field 'arxiv' is required",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	// Call the ArXiv microservice
+	arxivResponse, err := callArXivMicroservice()
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
 			Body:       "Error calling ArXiv microservice: " + err.Error(),
 			Headers:    getCORSHeaders(),
-		}, nil
+		}, err
 	}
 
-	responseJSON, err := json.Marshal(papers)
+	responseJSON, err := json.Marshal(arxivResponse)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
-			Body:       "Error marshaling response: " + err.Error(),
+			Body:       "Error marshaling ArXiv response: " + err.Error(),
 			Headers:    getCORSHeaders(),
-		}, nil
+		}, err
 	}
 
 	return events.LambdaFunctionURLResponse{
@@ -183,7 +227,14 @@ func callLLMMicroservice(text string) (LLMResponse, error) {
 }
 
 func callArXivMicroservice() ([]ArXivPaper, error) {
-	resp, err := http.Get(os.Getenv("ARXIV_MICROSERVICE_URL"))
+	arxivURL := os.Getenv("ARXIV_MICROSERVICE_URL")
+	if arxivURL == "" {
+		return nil, fmt.Errorf("ARXIV_MICROSERVICE_URL is not set")
+	}
+
+	log.Printf("Calling ArXiv microservice at: %s", arxivURL)
+
+	resp, err := http.Get(arxivURL)
 	if err != nil {
 		return nil, fmt.Errorf("error calling ArXiv microservice: %v", err)
 	}

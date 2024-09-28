@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Layer {
@@ -45,19 +45,37 @@ export class ApiService {
     @Inject('API_URL') private apiUrl: string
   ) {}
 
-  explainText(text: string): Observable<ExplanationResponse> {
-    const headers = new HttpHeaders({
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders({
       'Content-Type': 'application/json'
     });
-
-    return this.http.post<ExplanationResponse>(
-      `${this.apiUrl}/api/explain`,
-      { text },
-      { headers }
-    );
   }
 
   getArXivPapers(): Observable<ArXivPaper[]> {
-    return this.http.get<ArXivPaper[]>(`${this.apiUrl}/api/arxiv`);
+    const body = { action: 'arxiv' };  // Set the action in the body
+
+    console.log('Requesting URL:', this.apiUrl, 'with body:', body);
+    
+    return this.http.post<ArXivPaper[]>(
+      this.apiUrl,
+      body,  // Pass the action in the request body
+      { 
+        headers: this.getHeaders(),  // Set headers (if needed)
+      }
+    );
+  }
+
+  explainText(text: string): Observable<ExplanationResponse> {
+    const body = { action: 'explain', text };  // Include both action and text in the body
+
+    console.log('Requesting URL:', this.apiUrl, 'with body:', body);
+    
+    return this.http.post<ExplanationResponse>(
+      this.apiUrl,
+      body,  // Send action and text in the body
+      { 
+        headers: this.getHeaders(),  // Set headers (if needed)
+      }
+    );
   }
 }
