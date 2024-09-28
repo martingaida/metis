@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Center vertically if needed */
+    justify-content: center;
     box-sizing: border-box;
 }
 
@@ -21,16 +21,16 @@
     transform: translateY(20px);
     transition: opacity 300ms ease-out, transform 300ms ease-out;
     padding: 2rem 0;
-}
-  
-.explanation-container.visible {
-    opacity: 1;
-    transform: translateY(0);
+
+    &.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .custom-textarea {
     width: 100%;
-    max-width: 100%; /* Ensure full width within container */
+    max-width: 100%;
     border: 3px solid black;
     border-radius: 0;
     font-size: 1rem;
@@ -56,94 +56,68 @@
     }
 }
 
+%button-base {
+    border: 5px solid black;
+    background-color: white;
+    color: black;
+    transition: background-color 0.3s ease;
+    border-radius: 0;
+    cursor: pointer;
+}
+
 .custom-btn {
-  padding: 10px 20px;
-  font-weight: bold;
-  border: 5px solid black;
-  background-color: white;
-  color: black;
-  transition: background-color 0.3s ease;
-  border-radius: 0;
-  font-size: 1.3rem;
-  margin: 1rem 0;
+    @extend %button-base;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 1.3rem;
+    margin: 1rem 0;
 }
 
 .custom-btn-arxiv {
-  @extend .custom-btn;
-  margin: 0 0 3rem 0;
+    @extend .custom-btn;
+    margin: 0 0 3rem 0;
 }
 
 .arxiv-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-.arxiv-buttons button {
-  border: 5px solid black;
-  background-color: white;
-  color: black;
-  transition: background-color 0.3s ease;
-  border-radius: 0;
-  white-space: normal;
-  height: auto;
-  padding: 0.5rem 1rem;
-}
-
-.mat-mdc-progress-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     width: 100%;
-    height: 8px !important;
-    margin: 1rem 0;
+    margin-bottom: 1rem;
+
+    button {
+        @extend %button-base;
+        white-space: normal;
+        height: auto;
+        padding: 0.5rem 1rem;
+    }
 }
-  
+
 ::ng-deep {
     .mat-mdc-progress-bar {
-      .mdc-linear-progress__buffer {
-        background-color: #e0e0e0 !important;
-      }
-  
-      .mdc-linear-progress__bar {
-        transition: none !important;
-      }
-  
-      .mdc-linear-progress__primary-bar,
-      .mdc-linear-progress__secondary-bar {
-        transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
-      }
-  
-      &.mdc-linear-progress--indeterminate {
+        width: 100%;
+        height: 8px !important;
+        margin: 1rem 0;
+
+        .mdc-linear-progress__buffer {
+            background-color: #e0e0e0 !important;
+        }
+
+        .mdc-linear-progress__bar {
+            transition: none !important;
+        }
+
         .mdc-linear-progress__primary-bar,
         .mdc-linear-progress__secondary-bar {
-          transform-origin: center left !important;
+            transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
         }
-      }
-    }
-}
 
-@keyframes indeterminate-primary {
-    0% {
-      transform: translateX(-145.166611%);
-    }
-    100% {
-      transform: translateX(54.833389%);
-    }
-}
-  
-@keyframes indeterminate-secondary {
-    0% {
-      transform: translateX(-54.888891%);
-    }
-    100% {
-      transform: translateX(145.111109%);
-    }
-}
-
-/* Media Queries */
-@media (max-width: 660px) {
-    .container {
-        max-width: 90vw;
+        &.mdc-linear-progress--indeterminate {
+            .mdc-linear-progress__primary-bar,
+            .mdc-linear-progress__secondary-bar {
+                transform-origin: center left !important;
+            }
+        }
     }
 }
 
@@ -153,155 +127,174 @@ mat-icon {
 }
 
 .mat-tab-label mat-icon {
-  margin-right: 8px;
-  font-size: 24px;
+    margin-right: 8px;
+    font-size: 24px;
 }
 
 mat-icon {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
 .mode-toggle {
-  margin: 2rem 0;
+    margin: 2rem 0;
 }
 
 :host ::ng-deep {
-  .rounded-toggle.mat-button-toggle-group {
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    .rounded-toggle.mat-button-toggle-group {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.12);
 
-    .mat-button-toggle {
-      border-radius: 0;
-      height: 32px;
-      border-right: 1px solid rgba(0, 0, 0, 0.12);
+        .mat-button-toggle {
+            border-radius: 0;
+            height: 32px;
+            border-right: 1px solid rgba(0, 0, 0, 0.12);
 
-      &:last-child {
-        border-right: none;
-      }
+            &:last-child {
+                border-right: none;
+            }
 
-      .mat-button-toggle-label-content {
-        padding: 0 12px;
-        line-height: 32px;
-        font-size: 14px;
-      }
+            .mat-button-toggle-label-content {
+                padding: 0 12px;
+                line-height: 32px;
+                font-size: 14px;
+            }
 
-      // Style for the non-checked state
-      &:not(.mat-button-toggle-checked) {
-        background-color: white;
+            &:not(.mat-button-toggle-checked) {
+                background-color: white;
 
-        // Hide the icon in the non-checked state
-        .mat-button-toggle-button .mat-icon {
-          display: none !important; /* Hide the icon */
+                .mat-button-toggle-button .mat-icon {
+                    display: none !important;
+                }
+            }
+
+            &.mat-button-toggle-checked {
+                background-color: black;
+                color: white;
+
+                .mat-icon {
+                    display: none !important;
+                }
+            }
         }
-      }
-
-      // Style for the checked state
-      &.mat-button-toggle-checked {
-        background-color: black;
-        color: white;
-
-        // Hide the icon in the checked state
-        .mat-icon {
-          display: none !important; /* Hide the icon */
-        }
-      }
     }
-  }
 }
 
 .arxiv-buttons button.explained {
-  background-color: #e0e0e0;
-  color: #000000;
+    background-color: #e0e0e0;
+    color: #000000;
 }
 
 legend-card {
-  margin-bottom: 2rem;
-  font-size: 0.8rem;
+    margin-bottom: 2rem;
+    font-size: 0.8rem;
 }
 
 .legend-panel {
-  margin-bottom: 2rem;
-  font-size: 0.8rem;
+    margin-bottom: 2rem;
+    font-size: 0.8rem;
 
-  .mat-expansion-panel-header {
-    height: auto;
-    padding: 12px 24px;
-  }
+    .mat-expansion-panel-header {
+        height: auto;
+        padding: 12px 24px;
+    }
 
-  .mat-expansion-panel-header-title {
-    font-size: 1rem;
-    margin: 0;
-  }
+    .mat-expansion-panel-header-title {
+        font-size: 1rem;
+        margin: 0;
+    }
 }
 
 .legend-content {
-  padding-top: 0.5rem;
+    padding-top: 0.5rem;
 }
 
 .legend-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.3rem;
-
-  .legend-icon-wrapper {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin: 0; // Explicitly remove all margins
-  }
+    margin-bottom: 0.3rem;
 
-  mat-icon {
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0; // Explicitly remove all margins
-  }
+    .legend-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        margin: 0;
+    }
 
-  span {
-    margin-left: 8px; // Add space between icon and text
-    line-height: 24px;
-  }
+    mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+    span {
+        margin-left: 8px;
+        line-height: 24px;
+    }
 }
 
-// Add this new class to center the icons in their parent element
 .legend-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px; // Adjust this value as needed
-  height: 32px; // Adjust this value as needed
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
 }
 
 mat-card-title {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 mat-card-content {
-  padding-top: 0.5rem;
+    padding-top: 0.5rem;
 }
 
 ::ng-deep .legend-item .mat-icon {
-  margin: 0 !important;
+    margin: 0 !important;
 }
 
 .pdf-link {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  color: #000;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #f0f0f0;
+    color: #000;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
 
-  &:hover {
-    background-color: #e0e0e0;
-  }
+    &:hover {
+        background-color: #e0e0e0;
+    }
+}
+
+@keyframes indeterminate-primary {
+    0% {
+        transform: translateX(-145.166611%);
+    }
+    100% {
+        transform: translateX(54.833389%);
+    }
+}
+
+@keyframes indeterminate-secondary {
+    0% {
+        transform: translateX(-54.888891%);
+    }
+    100% {
+        transform: translateX(145.111109%);
+    }
+}
+
+@media (max-width: 660px) {
+    .container {
+        max-width: 90vw;
+    }
 }

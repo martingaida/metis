@@ -1,10 +1,11 @@
-from handlers.arxiv_scraper import ArXivScraperClient
+from handlers.arxiv_client import ArXivClient
 import json
 
 
 def lambda_handler(event, context):
-    scraper = ArXivScraperClient()
+    scraper = ArXivClient()
     papers = scraper.get_random_papers(num_categories=4, papers_per_category=1)
+    print(f'Response: {papers}')
 
     return {
         'statusCode': 200,

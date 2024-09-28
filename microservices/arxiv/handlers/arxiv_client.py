@@ -1,16 +1,39 @@
 import random
 import arxiv
+import json
+import time
+import os
 
 
-class ArXivScraperClient:
+class ArXivClient:
     def __init__(self):
+        self.cache_path = os.path.join(os.path.dirname(__file__), 'arxiv_papers.json')
         self.categories = [
             'astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 
             'hep-ph', 'hep-th', 'math-ph', 'nlin', 'nucl-ex', 
             'nucl-th', 'physics', 'quant-ph', 'math', 'cs'
         ]
 
+    def get_random_papers_cache(self, cache_path, num_papers=4):
+        with open(cache_path, 'r') as f:
+            all_papers = json.load(f)
+
+        # Ensure we don't try to sample more papers than are available
+        num_papers = min(num_papers, len(all_papers))
+
+        # Randomly sample the specified number of papers
+        selected_papers = random.sample(all_papers, num_papers)
+
+        return selected_papers
+
     def get_random_papers(self, num_categories=4, papers_per_category=1):
+
+        if os.path.exists(self.cache_path):
+            print('Loading papers from cache...')
+            time.sleep(1)
+            return self.get_random_papers_cache(self.cache_path, 4)
+        
+        print('Cache not found. Fetching from arXiv...')
         selected_categories = random.sample(self.categories, num_categories)
         papers = []
 

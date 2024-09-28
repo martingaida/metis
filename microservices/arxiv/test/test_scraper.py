@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from handlers.arxiv_scraper import ArXivScraperClient
+from handlers.arxiv_client import ArXivClient
 
 class TestArXivScraperClient(unittest.TestCase):
     def setUp(self):
-        self.scraper = ArXivScraperClient()
+        self.scraper = ArXivClient()
 
     @patch('handlers.arxiv_scraper.arxiv.Search')
     def test_get_random_papers(self, mock_search):
