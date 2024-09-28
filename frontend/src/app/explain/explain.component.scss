@@ -68,6 +68,11 @@
   margin: 1rem 0;
 }
 
+.custom-btn-arxiv {
+  @extend .custom-btn;
+  margin: 0 0 3rem 0;
+}
+
 .arxiv-buttons {
   display: flex;
   flex-direction: column;
@@ -203,4 +208,85 @@ mat-icon {
       }
     }
   }
+}
+
+.arxiv-buttons button.explained {
+  background-color: #e0e0e0;
+  color: #000000;
+}
+
+legend-card {
+  margin-bottom: 2rem;
+  font-size: 0.8rem;
+}
+
+.legend-panel {
+  margin-bottom: 2rem;
+  font-size: 0.8rem;
+
+  .mat-expansion-panel-header {
+    height: auto;
+    padding: 12px 24px;
+  }
+
+  .mat-expansion-panel-header-title {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.legend-content {
+  padding-top: 0.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.3rem;
+
+  .legend-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin: 0; // Explicitly remove all margins
+  }
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0; // Explicitly remove all margins
+  }
+
+  span {
+    margin-left: 8px; // Add space between icon and text
+    line-height: 24px;
+  }
+}
+
+// Add this new class to center the icons in their parent element
+.legend-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; // Adjust this value as needed
+  height: 32px; // Adjust this value as needed
+}
+
+mat-card-title {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+mat-card-content {
+  padding-top: 0.5rem;
+}
+
+::ng-deep .legend-item .mat-icon {
+  margin: 0 !important;
 }

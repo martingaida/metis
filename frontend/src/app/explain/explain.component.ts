@@ -1,16 +1,17 @@
 import { ApiService, Topic, Concept, Layer, ArXivPaper } from '../services/api.service';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { ExplanationResponse } from '../services/api.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-explain',
@@ -48,7 +49,10 @@ export class ExplainComponent implements OnInit {
   isExplanationVisible = false;
   mode: 'arXiv' | 'Custom' = 'arXiv';
   arXivPapers: ArXivPaper[] = [];
-  isLoadingArXiv = false; // New property to track arXiv loading state
+  isLoadingArXiv = false;
+  explainedPapers: { [id: string]: ExplanationResponse } = {};
+  maxRetries = 3;
+  currentPaperTitle: string | null = null;
 
   constructor(private apiService: ApiService) {}
 
@@ -59,15 +63,25 @@ export class ExplainComponent implements OnInit {
   }
 
   loadArXivPapers() {
-    this.isLoadingArXiv = true; // Set to true when starting to load
+    if (this.arXivPapers.length > 0) return;
+
+    this.isLoadingArXiv = true;
+    this.fetchArXivPapers(this.maxRetries);
+  }
+
+  fetchArXivPapers(retriesLeft: number) {
     this.apiService.getArXivPapers().subscribe(
       (papers) => {
         this.arXivPapers = papers;
-        this.isLoadingArXiv = false; // Set to false when loading is complete
+        this.isLoadingArXiv = false;
       },
       (error) => {
         console.error('Error fetching arXiv papers:', error);
-        this.isLoadingArXiv = false; // Set to false if there's an error
+        if (retriesLeft > 0) {
+          setTimeout(() => this.fetchArXivPapers(retriesLeft - 1), 2000);
+        } else {
+          this.isLoadingArXiv = false;
+        }
       }
     );
   }
@@ -77,6 +91,7 @@ export class ExplainComponent implements OnInit {
   }
 
   explainText() {
+    this.currentPaperTitle = null;
     if (this.isExplainDisabled) return;
 
     this.isLoading = true;
@@ -107,7 +122,39 @@ export class ExplainComponent implements OnInit {
   }
 
   explainArXiv(paper: ArXivPaper) {
-    this.inputText = `${paper.title}\n\n${paper.abstract}`;
-    this.explainText();
+    this.currentPaperTitle = paper.title;
+    if (this.explainedPapers[paper.id]) {
+      // Paper has already been explained, retrieve from storage
+      const savedExplanation = this.explainedPapers[paper.id];
+      this.explanations = savedExplanation.explanations.topics;
+      this.mainTakeaway = savedExplanation.explanations.main_takeaway;
+      this.isExplanationVisible = true;
+      this.scrollToExplanation();
+    } else {
+      this.inputText = `${paper.title}\n\n${paper.abstract}`;
+      this.isLoading = true;
+      this.isExplanationVisible = false;
+      this.apiService.explainText(this.inputText).subscribe(
+        (response) => {
+          console.log('Received response:', response);
+          this.explanations = response.explanations.topics;
+          this.mainTakeaway = response.explanations.main_takeaway;
+          this.explainedPapers[paper.id] = response; // Save the explanation
+          this.isLoading = false;
+          setTimeout(() => {
+            this.isExplanationVisible = true;
+            this.scrollToExplanation();
+          }, 100);
+        },
+        (error) => {
+          console.error('Error:', error);
+          this.isLoading = false;
+        }
+      );
+    }
+  }
+
+  isPaperExplained(paperId: string): boolean {
+    return !!this.explainedPapers[paperId];
   }
 }
