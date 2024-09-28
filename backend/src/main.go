@@ -11,9 +11,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	lambdaRuntime "github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/lambda"
 )
 
 type Request struct {
@@ -186,39 +183,16 @@ func callLLMMicroservice(text string) (LLMResponse, error) {
 }
 
 func callArXivMicroservice() ([]ArXivPaper, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2")) // Replace with your AWS region
+	resp, err := http.Get(os.Getenv("ARXIV_MICROSERVICE_URL"))
 	if err != nil {
-		return nil, fmt.Errorf("unable to load SDK config, %v", err)
+		return nil, fmt.Errorf("error calling ArXiv microservice: %v", err)
 	}
-
-	client := lambda.NewFromConfig(cfg)
-
-	payload, err := json.Marshal(map[string]string{})
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := client.Invoke(context.TODO(), &lambda.InvokeInput{
-		FunctionName: aws.String("ArXivFunction"), // Replace with your actual function name
-		Payload:      payload,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	var response struct {
-		StatusCode int             `json:"statusCode"`
-		Body       json.RawMessage `json:"body"`
-	}
-	err = json.Unmarshal(result.Payload, &response)
-	if err != nil {
-		return nil, err
-	}
+	defer resp.Body.Close()
 
 	var papers []ArXivPaper
-	err = json.Unmarshal(response.Body, &papers)
+	err = json.NewDecoder(resp.Body).Decode(&papers)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
 	return papers, nil

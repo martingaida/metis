@@ -60,7 +60,7 @@ Resources:
       AuthType: NONE
       Cors:
         AllowCredentials: false
-         AllowOrigins:
+        AllowOrigins:
           - '*'
         AllowMethods:
           - POST
@@ -85,3 +85,6 @@ Outputs:
   LLMFunctionUrl:
     Description: "LLM Function URL"
     Value: !GetAtt LLMFunctionUrl.FunctionUrl
+  ArXivFunctionUrl:
+    Description: "arXiv Function URL"
+    Value: !GetAtt ArXivFunctionUrl.FunctionUrl
