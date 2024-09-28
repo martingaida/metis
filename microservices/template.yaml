@@ -42,6 +42,39 @@ Resources:
       Principal: '*'
       FunctionUrlAuthType: NONE
 
+  ArXivFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: arxiv/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          PYTHONPATH: ./
+    Metadata:
+      BuildMethod: python3.9
+
+  ArXivFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref ArXivFunction
+      AuthType: NONE
+      Cors:
+        AllowCredentials: false
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - POST
+        AllowHeaders:
+          - Content-Type
+
+  ArXivFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ArXivFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+
 Parameters:
   OpenAIApiKey:
     Type: String
@@ -52,3 +85,6 @@ Outputs:
   LLMFunctionUrl:
     Description: "LLM Function URL"
     Value: !GetAtt LLMFunctionUrl.FunctionUrl
+  ArXivFunctionUrl:
+    Description: "arXiv Function URL"
+    Value: !GetAtt ArXivFunctionUrl.FunctionUrl

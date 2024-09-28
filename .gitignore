@@ -263,6 +263,7 @@ cython_debug/
 
 # IDE - VSCode
 .vscode
+.editorconfig
 
 # Maven
 /target

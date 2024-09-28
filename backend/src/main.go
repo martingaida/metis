@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
+	lambdaRuntime "github.com/aws/aws-lambda-go/lambda"
 )
 
 type Request struct {
@@ -45,17 +44,65 @@ type LLMResponse struct {
 	} `json:"explanations"`
 }
 
+type ArXivPaper struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Abstract    string `json:"abstract"`
+	Category    string `json:"category"`
+	Authors     string `json:"authors"`
+	Published   string `json:"published"`
+	AbstractURL string `json:"abstract_url"`
+	PDFURL      string `json:"pdf_url"`
+}
+
 func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	log.Printf("Received request: Method=%s, Body=%s", request.RequestContext.HTTP.Method, request.Body)
+	log.Printf("Received request: Method=%s, Path=%s, Body=%s", request.RequestContext.HTTP.Method, request.RequestContext.HTTP.Path, request.Body)
 
 	if request.RequestContext.HTTP.Method == "OPTIONS" {
 		return handleOptions()
 	}
 
+	// Parse request body
+	var requestBody map[string]string
+	err := json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		log.Printf("Error parsing request body: %v", err)
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Invalid request body",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	// Get the action from the body
+	action, exists := requestBody["action"]
+	if !exists || action == "" {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Action field is required",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	// Handle the action
+	switch action {
+	case "explain":
+		return handleExplain(request)
+	case "arxiv":
+		return handleGetArXivPapers(request)
+	default:
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 404,
+			Body:       "Action not recognized",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+}
+
+func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	var requestStruct Request
 	err := json.Unmarshal([]byte(request.Body), &requestStruct)
 	if err != nil {
-		log.Printf("Error unmarshaling request body: %v", err)
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
 			Body:       "Invalid request body: " + err.Error(),
@@ -63,10 +110,7 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		}, nil
 	}
 
-	log.Printf("Parsed request: %+v", requestStruct)
-
 	if requestStruct.Text == "" {
-		log.Println("Text field is empty")
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
 			Body:       "Text field is required",
@@ -74,30 +118,14 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		}, nil
 	}
 
-	// Call LLM microservice
-	llmServiceURL := os.Getenv("LLM_MICROSERVICE_URL")
-
-	if llmServiceURL == "" {
-		log.Println("LLM_MICROSERVICE_URL not set")
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       "LLM_MICROSERVICE_URL not set",
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
-	llmResponse, err := callLLMMicroservice(llmServiceURL + "?text=" + url.QueryEscape(requestStruct.Text))
-
+	llmResponse, err := callLLMMicroservice(requestStruct.Text)
 	if err != nil {
-		log.Printf("Error calling LLM microservice: %v", err)
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
 			Body:       "Error calling LLM microservice: " + err.Error(),
 			Headers:    getCORSHeaders(),
 		}, nil
 	}
-
-	log.Printf("LLM microservice response: %s", llmResponse)
 
 	responseJSON, err := json.Marshal(llmResponse)
 	if err != nil {
@@ -106,6 +134,53 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 			Body:       "Error marshaling response: " + err.Error(),
 			Headers:    getCORSHeaders(),
 		}, nil
+	}
+
+	return events.LambdaFunctionURLResponse{
+		StatusCode: 200,
+		Body:       string(responseJSON),
+		Headers:    getCORSHeaders(),
+	}, nil
+}
+
+func handleGetArXivPapers(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	// Parse the request body to get the action
+	var requestBody map[string]string
+	err := json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Invalid request body: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	action, exists := requestBody["action"]
+	if !exists || action != "arxiv" {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Action field 'arxiv' is required",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	// Call the ArXiv microservice
+	arxivResponse, err := callArXivMicroservice()
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 500,
+			Body:       "Error calling ArXiv microservice: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, err
+	}
+
+	responseJSON, err := json.Marshal(arxivResponse)
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 500,
+			Body:       "Error marshaling ArXiv response: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, err
 	}
 
 	return events.LambdaFunctionURLResponse{
@@ -151,6 +226,29 @@ func callLLMMicroservice(text string) (LLMResponse, error) {
 	return llmResponse, nil
 }
 
+func callArXivMicroservice() ([]ArXivPaper, error) {
+	arxivURL := os.Getenv("ARXIV_MICROSERVICE_URL")
+	if arxivURL == "" {
+		return nil, fmt.Errorf("ARXIV_MICROSERVICE_URL is not set")
+	}
+
+	log.Printf("Calling ArXiv microservice at: %s", arxivURL)
+
+	resp, err := http.Get(arxivURL)
+	if err != nil {
+		return nil, fmt.Errorf("error calling ArXiv microservice: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var papers []ArXivPaper
+	err = json.NewDecoder(resp.Body).Decode(&papers)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding response: %v", err)
+	}
+
+	return papers, nil
+}
+
 func main() {
-	lambda.Start(handleRequest)
+	lambdaRuntime.Start(handleRequest)
 }

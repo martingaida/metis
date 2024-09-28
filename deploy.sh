@@ -130,6 +130,12 @@ deploy_backend() {
         exit 1
     fi
 
+    # Check if ARXIV_MICROSERVICE_URL is set
+    if [ -z "$ARXIV_MICROSERVICE_URL" ]; then
+        echo "Error: ARXIV_MICROSERVICE_URL is not set in .env file"
+        exit 1
+    fi
+
     echo "Building Go Lambda function..."
     cd src
     GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
