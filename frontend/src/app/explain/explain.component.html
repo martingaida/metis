@@ -7,11 +7,12 @@
     </mat-button-toggle-group>
     <!-- arXiv mode -->
     <ng-container *ngIf="mode === 'arXiv'">
-        <div class="arxiv-buttons">
-          <button mat-raised-button *ngFor="let paper of arXivPapers" (click)="explainArXiv(paper.id)" [disabled]="isExplainDisabled">
-            {{ paper.title }}
-          </button>
-        </div>
+      <div class="arxiv-buttons">
+        <button mat-raised-button *ngFor="let paper of arXivPapers" (click)="explainArXiv(paper)" [disabled]="isExplainDisabled">
+          {{ paper.title }}
+        </button>
+      </div>
+      <mat-progress-bar *ngIf="isLoadingArXiv || isLoading" mode="indeterminate"></mat-progress-bar>
     </ng-container>
     <!-- Custom mode -->
     <ng-container *ngIf="mode === 'Custom'">
@@ -26,9 +27,9 @@
         <button class="custom-btn" (click)="explainText()" [disabled]="isExplainDisabled">
             {{ isLoading ? 'Thinking...' : 'Explain' }}
         </button>
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
     </ng-container>
     <!-- Explanation -->
-    <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
     <div *ngIf="explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
         <!-- Gist Card -->
         <mat-card *ngIf="mainTakeaway" class="mb-4">

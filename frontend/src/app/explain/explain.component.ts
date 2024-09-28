@@ -1,7 +1,7 @@
-import { ApiService, Topic, Concept, Layer } from '../services/api.service';
+import { ApiService, Topic, Concept, Layer, ArXivPaper } from '../services/api.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -11,13 +11,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatButtonModule } from '@angular/material/button';
-
-interface ArXivPaper {
-  id: string;
-  title: string;
-  abstract: string;
-  conclusion: string;
-}
 
 @Component({
   selector: 'app-explain',
@@ -45,7 +38,8 @@ interface ArXivPaper {
     ])
   ]
 })
-export class ExplainComponent {
+
+export class ExplainComponent implements OnInit {
   inputText = '';
   explanations: Topic[] = [];
   mainTakeaway: string = '';
@@ -53,24 +47,40 @@ export class ExplainComponent {
   isLoading = false;
   isExplanationVisible = false;
   mode: 'arXiv' | 'Custom' = 'arXiv';
-  arXivPapers: ArXivPaper[] = [
-    { id: '2303.08774', title: 'GPT-4 Technical Report', abstract: '', conclusion: '' },
-    { id: '2303.12712', title: 'Sparks of Artificial General Intelligence', abstract: '', conclusion: '' },
-  ];
+  arXivPapers: ArXivPaper[] = [];
+  isLoadingArXiv = false; // New property to track arXiv loading state
 
   constructor(private apiService: ApiService) {}
 
   @ViewChild('explanationContainer') private explanationContainer!: ElementRef;
 
+  ngOnInit() {
+    this.loadArXivPapers();
+  }
+
+  loadArXivPapers() {
+    this.isLoadingArXiv = true; // Set to true when starting to load
+    this.apiService.getArXivPapers().subscribe(
+      (papers) => {
+        this.arXivPapers = papers;
+        this.isLoadingArXiv = false; // Set to false when loading is complete
+      },
+      (error) => {
+        console.error('Error fetching arXiv papers:', error);
+        this.isLoadingArXiv = false; // Set to false if there's an error
+      }
+    );
+  }
+
   get isExplainDisabled(): boolean {
-    return this.isLoading || !this.inputText.trim();
+    return this.isLoading || this.isLoadingArXiv || (!this.inputText.trim() && this.mode === 'Custom');
   }
 
   explainText() {
     if (this.isExplainDisabled) return;
 
     this.isLoading = true;
-    this.isExplanationVisible = false; // Hide explanation while loading
+    this.isExplanationVisible = false;
     console.log('Explaining text:', this.inputText);
     this.apiService.explainText(this.inputText).subscribe(
       (response) => {
@@ -96,11 +106,8 @@ export class ExplainComponent {
     }
   }
 
-  explainArXiv(paperId: string) {
-    const paper = this.arXivPapers.find(p => p.id === paperId);
-    if (paper) {
-      this.inputText = paper.abstract + paper.conclusion;
-      this.explainText();
-    }
+  explainArXiv(paper: ArXivPaper) {
+    this.inputText = `${paper.title}\n\n${paper.abstract}`;
+    this.explainText();
   }
 }

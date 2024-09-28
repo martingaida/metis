@@ -25,6 +25,17 @@ export interface ExplanationResponse {
   };
 }
 
+export interface ArXivPaper {
+  id: string;
+  title: string;
+  abstract: string;
+  category: string;
+  authors: string;
+  published: string;
+  abstract_url: string;
+  pdf_url: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,9 +51,13 @@ export class ApiService {
     });
 
     return this.http.post<ExplanationResponse>(
-      `${this.apiUrl}`,
+      `${this.apiUrl}/api/explain`,
       { text },
       { headers }
     );
+  }
+
+  getArXivPapers(): Observable<ArXivPaper[]> {
+    return this.http.get<ArXivPaper[]>(`${this.apiUrl}/api/arxiv`);
   }
 }
