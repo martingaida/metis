@@ -78,3 +78,27 @@ This architecture enables PleX to provide fast, scalable, and comprehensive expl
 ## Note on Naming
 
 While the internal project name is Metis, the frontend application is branded as PleX (short for "Please Explain"). This branding decision was made to create a more engaging user experience and to align with the project's goal of making complex ideas simple to understand.
+
+## Future Improvements
+
+1. Optimized arXiv Integration:
+   - Implement more efficient caching mechanisms for arXiv papers to reduce API calls and improve response times.
+   - Optimize fetching algorithm to reduce latency.
+
+2. Enhanced Caching System:
+   - Implement a server-side caching system for explanations. When a user requests an explanation for a specific paper, cache the result for a set period.
+   - If another user requests the same paper within the cache period, serve the cached explanation instead of generating a new one, significantly reducing processing time and API usage.
+
+3. Shareable Links:
+   - Generate unique, shareable URLs for each explanation.
+   - Allow users to easily share interesting explanations with others via a direct link.
+   - Implement a system to retrieve cached explanations using these shareable links.
+
+4. Additional Educational Tools:
+   - Integrate interactive quizzes and assessments to help users test their understanding of explained concepts.
+   - Implement a spaced repetition system to help users retain information over time.
+   - Add a feature for users to create and share their own study guides based on the explanations.
+   - Incorporate multimedia elements such as diagrams, videos, and interactive simulations to cater to different learning styles.
+   - Develop a recommendation system that suggests related topics or papers based on user interests and learning history.
+
+These improvements aim to enhance PleX's performance, user experience, and overall functionality, making it an even more powerful tool for understanding complex ideas and facilitating effective learning across various subjects.
