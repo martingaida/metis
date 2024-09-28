@@ -1,7 +1,7 @@
 <div class="container">
   <div class="explain-wrapper">
     <!-- Mode toggle -->
-    <mat-button-toggle-group [(ngModel)]="mode" [hideSingleSelectionIndicator]="true" class="mode-toggle rounded-toggle">
+    <mat-button-toggle-group [(ngModel)]="mode" [hideSingleSelectionIndicator]="true" class="mode-toggle rounded-toggle" [disabled]="isLoading || isLoadingArXiv">
         <mat-button-toggle value="arXiv">arXiv</mat-button-toggle>
         <mat-button-toggle value="Custom">Custom</mat-button-toggle>
     </mat-button-toggle-group>
@@ -16,7 +16,7 @@
         </button>
       </div>
       <button *ngIf="isLoadingArXiv" disabled class="custom-btn-arxiv">
-        Downloading...
+        Loading...
       </button>
       <mat-progress-bar *ngIf="isLoadingArXiv || isLoading" mode="indeterminate" class="arxiv-progress-bar"></mat-progress-bar>
     </ng-container>
