@@ -80,10 +80,6 @@ web_modules/
 .env.local
 
 # parcel-bundler cache (https://parceljs.org/)
-<<<<<<< HEAD
-.cache
-=======
->>>>>>> ddb9400423df2da42dff9107ca11e16756fdb0b7
 .parcel-cache
 
 # Next.js build output
@@ -96,22 +92,12 @@ dist
 
 # Gatsby files
 .cache/
-<<<<<<< HEAD
-# Comment in the public line in if your project uses Gatsby and not Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
-# public
-=======
->>>>>>> ddb9400423df2da42dff9107ca11e16756fdb0b7
 
 # vuepress build output
 .vuepress/dist
 
 # vuepress v2.x temp and cache directory
 .temp
-<<<<<<< HEAD
-.cache
-=======
->>>>>>> ddb9400423df2da42dff9107ca11e16756fdb0b7
 
 # Docusaurus cache and generated files
 .docusaurus
@@ -137,8 +123,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-<<<<<<< HEAD
-=======
 
 # Python
 # Byte-compiled / optimized / DLL files
@@ -335,4 +319,3 @@ xcuserdata/
 
 # Go
 backend/bootstrap
->>>>>>> ddb9400423df2da42dff9107ca11e16756fdb0b7

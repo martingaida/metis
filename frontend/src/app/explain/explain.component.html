@@ -1,14 +1,14 @@
 <div class="container">
   <div class="explain-wrapper">
     <!-- Mode toggle -->
-    <mat-button-toggle-group [(ngModel)]="mode" class="mode-toggle">
+    <mat-button-toggle-group [(ngModel)]="mode" [hideSingleSelectionIndicator]="true" class="mode-toggle rounded-toggle">
         <mat-button-toggle value="arXiv">arXiv</mat-button-toggle>
         <mat-button-toggle value="Custom">Custom</mat-button-toggle>
     </mat-button-toggle-group>
     <!-- arXiv mode -->
     <ng-container *ngIf="mode === 'arXiv'">
         <div class="arxiv-buttons">
-          <button mat-raised-button *ngFor="let paper of arXivPapers" (click)="explainArXiv(paper.id)">
+          <button mat-raised-button *ngFor="let paper of arXivPapers" (click)="explainArXiv(paper.id)" [disabled]="isExplainDisabled">
             {{ paper.title }}
           </button>
         </div>
