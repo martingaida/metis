@@ -93,6 +93,9 @@
             <mat-card-content>
                 <p>{{ mainTakeaway }}</p>
             </mat-card-content>
+            <a *ngIf="currentPaperPdfUrl" [href]="currentPaperPdfUrl" target="_blank" rel="noopener noreferrer" class="pdf-link">
+                View PDF
+            </a>
         </mat-card>
         <!-- Breakdown -->
         <mat-accordion>

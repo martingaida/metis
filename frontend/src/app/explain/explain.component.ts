@@ -53,6 +53,7 @@ export class ExplainComponent implements OnInit {
   explainedPapers: { [id: string]: ExplanationResponse } = {};
   maxRetries = 3;
   currentPaperTitle: string | null = null;
+  currentPaperPdfUrl: string | null = null;
 
   constructor(private apiService: ApiService) {}
 
@@ -123,6 +124,7 @@ export class ExplainComponent implements OnInit {
 
   explainArXiv(paper: ArXivPaper) {
     this.currentPaperTitle = paper.title;
+    this.currentPaperPdfUrl = paper.pdf_url;
     if (this.explainedPapers[paper.id]) {
       // Paper has already been explained, retrieve from storage
       const savedExplanation = this.explainedPapers[paper.id];
