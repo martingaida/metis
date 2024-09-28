@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
+	lambdaRuntime "github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
 )
 
 type Request struct {
@@ -45,17 +47,42 @@ type LLMResponse struct {
 	} `json:"explanations"`
 }
 
+type ArXivPaper struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Abstract    string `json:"abstract"`
+	Category    string `json:"category"`
+	Authors     string `json:"authors"`
+	Published   string `json:"published"`
+	AbstractURL string `json:"abstract_url"`
+	PDFURL      string `json:"pdf_url"`
+}
+
 func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	log.Printf("Received request: Method=%s, Body=%s", request.RequestContext.HTTP.Method, request.Body)
+	log.Printf("Received request: Method=%s, Path=%s, Body=%s", request.RequestContext.HTTP.Method, request.RequestContext.HTTP.Path, request.Body)
 
 	if request.RequestContext.HTTP.Method == "OPTIONS" {
 		return handleOptions()
 	}
 
+	switch request.RequestContext.HTTP.Path {
+	case "/api/explain":
+		return handleExplain(request)
+	case "/api/arxiv":
+		return handleGetArXivPapers(request)
+	default:
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 404,
+			Body:       "Not Found",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+}
+
+func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	var requestStruct Request
 	err := json.Unmarshal([]byte(request.Body), &requestStruct)
 	if err != nil {
-		log.Printf("Error unmarshaling request body: %v", err)
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
 			Body:       "Invalid request body: " + err.Error(),
@@ -63,10 +90,7 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		}, nil
 	}
 
-	log.Printf("Parsed request: %+v", requestStruct)
-
 	if requestStruct.Text == "" {
-		log.Println("Text field is empty")
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
 			Body:       "Text field is required",
@@ -74,22 +98,8 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		}, nil
 	}
 
-	// Call LLM microservice
-	llmServiceURL := os.Getenv("LLM_MICROSERVICE_URL")
-
-	if llmServiceURL == "" {
-		log.Println("LLM_MICROSERVICE_URL not set")
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 500,
-			Body:       "LLM_MICROSERVICE_URL not set",
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
-	llmResponse, err := callLLMMicroservice(llmServiceURL + "?text=" + url.QueryEscape(requestStruct.Text))
-
+	llmResponse, err := callLLMMicroservice(requestStruct.Text)
 	if err != nil {
-		log.Printf("Error calling LLM microservice: %v", err)
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
 			Body:       "Error calling LLM microservice: " + err.Error(),
@@ -97,9 +107,33 @@ func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest)
 		}, nil
 	}
 
-	log.Printf("LLM microservice response: %s", llmResponse)
-
 	responseJSON, err := json.Marshal(llmResponse)
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 500,
+			Body:       "Error marshaling response: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	return events.LambdaFunctionURLResponse{
+		StatusCode: 200,
+		Body:       string(responseJSON),
+		Headers:    getCORSHeaders(),
+	}, nil
+}
+
+func handleGetArXivPapers(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	papers, err := callArXivMicroservice()
+	if err != nil {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 500,
+			Body:       "Error calling ArXiv microservice: " + err.Error(),
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	responseJSON, err := json.Marshal(papers)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
@@ -151,6 +185,45 @@ func callLLMMicroservice(text string) (LLMResponse, error) {
 	return llmResponse, nil
 }
 
+func callArXivMicroservice() ([]ArXivPaper, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2")) // Replace with your AWS region
+	if err != nil {
+		return nil, fmt.Errorf("unable to load SDK config, %v", err)
+	}
+
+	client := lambda.NewFromConfig(cfg)
+
+	payload, err := json.Marshal(map[string]string{})
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := client.Invoke(context.TODO(), &lambda.InvokeInput{
+		FunctionName: aws.String("ArXivFunction"), // Replace with your actual function name
+		Payload:      payload,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var response struct {
+		StatusCode int             `json:"statusCode"`
+		Body       json.RawMessage `json:"body"`
+	}
+	err = json.Unmarshal(result.Payload, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	var papers []ArXivPaper
+	err = json.Unmarshal(response.Body, &papers)
+	if err != nil {
+		return nil, err
+	}
+
+	return papers, nil
+}
+
 func main() {
-	lambda.Start(handleRequest)
+	lambdaRuntime.Start(handleRequest)
 }
