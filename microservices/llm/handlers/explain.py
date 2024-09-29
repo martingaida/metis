@@ -21,7 +21,7 @@ class Layer(BaseModel):
 
 class Concept(BaseModel):
     concept: str
-    layers: List[Layer]
+    layer: Layer
 
 class Topic(BaseModel):
     topic: str
@@ -32,80 +32,70 @@ class StructuredExplanation(BaseModel):
     main_takeaway: str
 
 
-def generate_structured_explanation(text):
+def generate_structured_explanation(text, level):
     """
     Generate a structured explanation of the given text using OpenAI's GPT model.
 
-    This function analyzes the input text and produces a multi-layered explanation
-    of the main topics and concepts within it. The explanation is structured into
-    topics, concepts, and three layers of detail for each concept.
+    This function analyzes the input text and produces an explanation
+    of the main topics and concepts within it,
+    tailored to the provided reading level based on Flesch-Kincaid Score,
+    using "What, Why, How" framework.
 
     Args:
         text (str): The input text to be analyzed and explained.
 
     Returns:
         StructuredExplanation: A structured object containing the explanation,
-        including topics, concepts, and layered explanations.
+        including topics, concepts, and corresponding explanation layers.
 
     Raises:
         OpenAIError: If there's an issue with the OpenAI API call.
         JSONDecodeError: If the API response cannot be parsed as JSON.
     """
 
-    prompt = f"""Analyze the following text and provide a structured explanation:
+    prompt = f"""Analyze the following text and provide a structured explanation at the {level} reading level:
 
-        1. Identify the main topics discussed in the text. The number of topics should reflect the content; there may be one dominant topic or multiple important topics.
-        2. For each topic, list the key concepts. The number of concepts should be appropriate to fully represent the topic without redundancy.
-        3. For each concept, provide a three-layered explanation using the 'What, Why, How' framework. Ensure that each layer builds upon the previous one, diving deeper without repeating information:
-        - Layer 1: Provide a simple explanation for beginners. Be descriptive and use multiple sentences to explain the concept, why it is important, and how it works in layman's terms.
-        - Layer 2: Build upon Layer 1 by providing a more detailed explanation with examples, analogies, or practical applications to illustrate the concept. Ensure it includes why it is significant in real-world scenarios and how it functions in practice. Introduce more complex aspects not covered in Layer 1.
-        - Layer 3: Offer a thorough, technical explanation for advanced readers. Include technical definitions, components, and an in-depth exploration of how it operates on a technical level. Use examples from the field and explore its technical implications not discussed in previous layers.
+    1. Identify the main topics discussed in the text. The number of topics should reflect the content; there may be one dominant topic or multiple important topics.
+    2. For each topic, list the key concepts. The number of concepts should be appropriate to fully represent the topic without redundancy.
+    3. For each concept, provide a single-layered explanation using the 'What, Why, How' framework, tailored to the {level} reading level:
+    
+    - What: Explain what the concept is, adjusted to the {level} reading level of understanding.
+    - Why: Describe why the concept is important or significant, with complexity suitable for the {level} reading level.
+    - How: Explain how the concept works or is applied, with detail appropriate for the {level} reading level.
 
-        Ensure that the explanations across layers flow naturally, with each layer adding new information and insights rather than repeating previous content.
+    Adjust the complexity and depth of each explanation based on the specified reading level using Flesch-Kincaid Scale:
+        - K3: kindergarten, ages 5-8, example book "Hooray for Fish!"
+        - K6: elementary, ages 8-11, example book "The Gruffalo"
+        - K9: middle school, ages 11-14, example book "Harry Potter"
+        - K12: high school, ages 14-17, example book "Jurassic Park"
+        - College: college, ages 17-20, example book "A Brief History of Time"
+        - Graduate: graduate, ages 20+, example book "academic papers"
 
-        4. Provide a short summary that captures the most significant takeaway from the entire text.
+    4. Provide a short summary that captures the most significant takeaway from the entire text, adjusted to the {level} reading level of understanding.
 
-        Present the response in the following JSON format:
+    Present the response in the following JSON format:
 
-        {{
-            "topics": [
-                {{
+    {{
+        "topics": [
+            {{
                 "topic": "Topic Name",
                 "concepts": [
                     {{
-                    "concept": "Concept Name",
-                    "layers": [
-                        {{
-                        "layer_1": {{
-                            "what": "Basic explanation of what it is.",
-                            "why": "Simple explanation of why it's important.",
-                            "how": "Basic explanation of how it works."
+                        "concept": "Concept Name",
+                        "layer": {{
+                            "what": "Explanation of what it is, tailored to the {level} level.",
+                            "why": "Explanation of why it's important, tailored to the {level} level.",
+                            "how": "Explanation of how it works, tailored to the {level} level."
                         }}
-                        }},
-                        {{
-                        "layer_2": {{
-                            "what": "More detailed explanation, building on the previous layer",
-                            "why": "Deeper exploration of its significance, with examples.",
-                            "how": "More complex explanation of its mechanics, with practical applications."
-                        }}
-                        }},
-                        {{
-                        "layer_3": {{
-                            "what": "Advanced technical definition and components.",
-                            "why": "In-depth explanation of its importance on a technical level.",
-                            "how": "Comprehensive technical explanation of its operation, with advanced examples."
-                        }}
-                        }}
-                    ]
                     }}
                 ]
-                }}
-            ],
-            "main_takeaway": "A short summary capturing the most important point from the entire text."
-        }}
+            }}
+        ],
+        "main_takeaway": "A short summary capturing the most important point from the entire text, adjusted to the {level} level."
+    }}
 
-        Text to analyze:
-        {text}
+    Text to analyze:
+    {text}
     """
 
     try:
@@ -134,10 +124,10 @@ def generate_structured_explanation(text):
         print(f"Unexpected response structure: {e}")
         raise
 
-def generate_response(text):
+def generate_response(text, level):
     try:
         start_time = time.time()
-        result = generate_structured_explanation(text)
+        result = generate_structured_explanation(text, level)
         total_time = time.time() - start_time
         print(f'Total function runtime: {total_time:.2f} seconds')
         return {"explanations": result.model_dump()}
