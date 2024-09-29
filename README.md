@@ -4,20 +4,23 @@
 
 # PleX: Complex Ideas Made Simple
 
-PleX (short for "Please Explain") is an innovative application designed to explain complex subjects by breaking them down into digestible components. The system works by:
+PleX (short for "Please Explain") is an innovative application designed to explain complex subjects by adapting explanations to different reading levels. The system works by:
 
-1. Dividing the main subject into major topics
-2. Breaking down each topic into key concepts
-3. Explaining each concept in three layers of increasing detail:
-   - Layer 1: High-level overview
-   - Layer 2: Detailed explanation
-   - Layer 3: Technical deep-dive
-4. Each layer of explanation follows the "What, Why, How" framework to ensure comprehensive understanding:
+1. Analyzing the input text or topic
+2. Breaking down the subject into key concepts
+3. Explaining each concept at the user's chosen reading level, based on the Flesch-Kincaid Scale:
+   - K3: Ages 5-8, equivalent to kindergarten to 3rd grade
+   - K6: Ages 8-11, equivalent to 4th to 6th grade
+   - K9: Ages 11-14, equivalent to 7th to 9th grade
+   - K12: Ages 14-17, equivalent to 10th to 12th grade
+   - College: Ages 17-20, equivalent to undergraduate level
+   - Graduate: Ages 20+, equivalent to graduate or professional level
+4. Each explanation follows the "What, Why, How" framework to ensure comprehensive understanding:
    - What: Definition and basic description of the concept
    - Why: Importance and relevance of the concept
    - How: Practical application or functioning of the concept
 
-This structured approach allows users to grasp complex information at their preferred depth of understanding, making it suitable for learners at all levels.
+This adaptive approach allows users to grasp complex information at their preferred level of understanding, making it suitable for learners of all ages and backgrounds.
 
 ## Technical Stack
 
