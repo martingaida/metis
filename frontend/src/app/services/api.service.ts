@@ -10,7 +10,7 @@ export interface Layer {
 
 export interface Concept {
   concept: string;
-  layers: Layer[];
+  layer: Layer;
 }
 
 export interface Topic {
@@ -65,16 +65,16 @@ export class ApiService {
     );
   }
 
-  explainText(text: string): Observable<ExplanationResponse> {
-    const body = { action: 'explain', text };  // Include both action and text in the body
+  explainText(text: string, level: string): Observable<ExplanationResponse> {
+    const body = { action: 'explain', text, level };
 
     console.log('Requesting URL:', this.apiUrl, 'with body:', body);
     
     return this.http.post<ExplanationResponse>(
       this.apiUrl,
-      body,  // Send action and text in the body
+      body,
       { 
-        headers: this.getHeaders(),  // Set headers (if needed)
+        headers: this.getHeaders(),
       }
     );
   }

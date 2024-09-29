@@ -7,7 +7,7 @@ import (
 
 func TestCallLLMMicroservice(t *testing.T) {
 	// Assuming callLLMMicroservice takes a string parameter
-	response, err := callLLMMicroservice("sample input")
+	response, err := callLLMMicroservice("sample input", "Basic")
 
 	if err != nil {
 		if strings.Contains(err.Error(), "unsupported protocol scheme") {

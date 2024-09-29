@@ -14,7 +14,9 @@ import (
 )
 
 type Request struct {
-	Text string `json:"text"`
+	Text   string `json:"text"`
+	Action string `json:"action"`
+	Level  string `json:"level"`
 }
 
 type Layer struct {
@@ -24,8 +26,8 @@ type Layer struct {
 }
 
 type Concept struct {
-	Concept string  `json:"concept"`
-	Layers  []Layer `json:"layers"`
+	Concept string `json:"concept"`
+	Layer   Layer  `json:"layer"`
 }
 
 type Topic struct {
@@ -118,7 +120,15 @@ func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFuncti
 		}, nil
 	}
 
-	llmResponse, err := callLLMMicroservice(requestStruct.Text)
+	if requestStruct.Level == "" {
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 400,
+			Body:       "Level field is required",
+			Headers:    getCORSHeaders(),
+		}, nil
+	}
+
+	llmResponse, err := callLLMMicroservice(requestStruct.Text, requestStruct.Level)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
@@ -205,8 +215,8 @@ func getCORSHeaders() map[string]string {
 	}
 }
 
-func callLLMMicroservice(text string) (LLMResponse, error) {
-	requestBody, err := json.Marshal(map[string]string{"text": text})
+func callLLMMicroservice(text string, level string) (LLMResponse, error) {
+	requestBody, err := json.Marshal(map[string]string{"text": text, "level": level})
 	if err != nil {
 		return LLMResponse{}, fmt.Errorf("error marshaling request: %v", err)
 	}
