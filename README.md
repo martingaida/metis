@@ -78,6 +78,33 @@ This architecture enables PleX to provide fast, scalable, and comprehensive expl
 
 4. Interactive UI: The frontend presents the multi-layered explanation in an interactive format, allowing users to explore concepts at their preferred depth.
 
+5. Image Generation Feature
+
+   - Our application now includes an exciting image generation feature that enhances the explanation process by providing visual representations of key concepts. This feature utilizes state-of-the-art AI technology to create relevant images for each concept explained.
+
+   - **Model**: We use the DALL-E 3 model, which is known for its ability to generate high-quality, contextually relevant images based on text prompts.
+   
+   - **Integration**: The image generation is seamlessly integrated into our explanation pipeline. After generating the textual explanation for each concept, we automatically create a prompt for image generation.
+   
+   - **Image Specifications**: 
+      1. Size: 1024x1024 pixels
+      2. Quality: Standard
+      3. Number of images per concept: 1
+
+### How it works:
+
+1. When an explanation is generated, each concept within the explanation is processed for image creation.
+2. An image prompt is automatically generated based on the concept's description.
+3. This prompt is sent to the DALL-E 3 model via the OpenAI API.
+4. The generated image URL is then included in the response alongside the textual explanation.
+5. In the frontend, these images are displayed next to their corresponding concepts, providing a visual aid to the explanation.
+
+### Benefits:
+
+- Enhanced Understanding: Visual representations can significantly improve comprehension of complex concepts.
+- Engagement: Images make the learning experience more engaging and memorable.
+- Accessibility: Visual aids can help users with different learning styles or those who prefer visual information.
+
 ## Note on Naming
 
 While the internal project name is Metis, the frontend application is branded as PleX (short for "Please Explain"). This branding decision was made to create a more engaging user experience and to align with the project's goal of making complex ideas simple to understand.
