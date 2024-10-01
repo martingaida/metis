@@ -78,6 +78,33 @@ This architecture enables PleX to provide fast, scalable, and comprehensive expl
 
 4. Interactive UI: The frontend presents the multi-layered explanation in an interactive format, allowing users to explore concepts at their preferred depth.
 
+5. Image Generation Feature
+
+   - Our application now includes an exciting image generation feature that enhances the explanation process by providing visual representations of key concepts. This feature utilizes state-of-the-art AI technology to create relevant images for each concept explained.
+
+   - **Model**: We use the DALL-E 3 model, which is known for its ability to generate high-quality, contextually relevant images based on text prompts.
+   
+   - **Integration**: The image generation is seamlessly integrated into our explanation pipeline. After generating the textual explanation for each concept, we automatically create a prompt for image generation.
+   
+   - **Image Specifications**: 
+      1. Size: 1024x1024 pixels
+      2. Quality: Standard
+      3. Number of images per concept: 1
+
+### How it works:
+
+1. When an explanation is generated, each concept within the explanation is processed for image creation.
+2. An image prompt is automatically generated based on the concept's description.
+3. This prompt is sent to the DALL-E 3 model via the OpenAI API.
+4. The generated image URL is then included in the response alongside the textual explanation.
+5. In the frontend, these images are displayed next to their corresponding concepts, providing a visual aid to the explanation.
+
+### Benefits:
+
+- Enhanced Understanding: Visual representations can significantly improve comprehension of complex concepts.
+- Engagement: Images make the learning experience more engaging and memorable.
+- Accessibility: Visual aids can help users with different learning styles or those who prefer visual information.
+
 ## Note on Naming
 
 While the internal project name is Metis, the frontend application is branded as PleX (short for "Please Explain"). This branding decision was made to create a more engaging user experience and to align with the project's goal of making complex ideas simple to understand.
@@ -103,5 +130,19 @@ While the internal project name is Metis, the frontend application is branded as
    - Add a feature for users to create and share their own study guides based on the explanations.
    - Incorporate multimedia elements such as diagrams, videos, and interactive simulations to cater to different learning styles.
    - Develop a recommendation system that suggests related topics or papers based on user interests and learning history.
+
+5. Performance Optimization:
+
+   - Currently, with the addition of image generation, the process of creating a full explanation (including images) takes approximately one minute. This increased response time is due to the complex nature of generating high-quality, contextually relevant images for each concept.
+
+   - We are actively working on optimizing this process to improve response times. Potential optimization strategies include:
+
+      1. Implementing parallel processing for image generation
+      2. Caching frequently requested images
+      3. Offering a text-only mode for faster initial loading, with an option to load images on demand
+      4. Exploring more efficient image generation models or techniques
+
+Users should be aware of this current performance characteristic when using the image generation feature. We appreciate your patience as we work to enhance both the quality and speed of our explanations.
+
 
 These improvements aim to enhance PleX's performance, user experience, and overall functionality, making it an even more powerful tool for understanding complex ideas and facilitating effective learning across various subjects.

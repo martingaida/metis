@@ -26,8 +26,10 @@ type Layer struct {
 }
 
 type Concept struct {
-	Concept string `json:"concept"`
-	Layer   Layer  `json:"layer"`
+	Concept     string `json:"concept"`
+	Layer       Layer  `json:"layer"`
+	ImagePrompt string `json:"image_prompt"`
+	ImageURL    string `json:"image_url"`
 }
 
 type Topic struct {
@@ -37,13 +39,12 @@ type Topic struct {
 
 type Response struct {
 	Explanations []Topic `json:"explanations"`
+	MainTakeaway string  `json:"main_takeaway"`
 }
 
 type LLMResponse struct {
-	Explanations struct {
-		Topics       []Topic `json:"topics"`
-		MainTakeaway string  `json:"main_takeaway"`
-	} `json:"explanations"`
+	Topics       []Topic `json:"topics"`
+	MainTakeaway string  `json:"main_takeaway"`
 }
 
 type ArXivPaper struct {
@@ -128,7 +129,8 @@ func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFuncti
 		}, nil
 	}
 
-	llmResponse, err := callLLMMicroservice(requestStruct.Text, requestStruct.Level)
+	// Call LLM microservice
+	llmResponse, err := callLLMMicroservice(requestStruct.Text, requestStruct.Level, false)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
@@ -137,7 +139,13 @@ func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFuncti
 		}, nil
 	}
 
-	responseJSON, err := json.Marshal(llmResponse)
+	// Prepare the response
+	response := Response{
+		Explanations: llmResponse.Topics,
+		MainTakeaway: llmResponse.MainTakeaway,
+	}
+
+	responseJSON, err := json.Marshal(response)
 	if err != nil {
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 500,
@@ -154,26 +162,6 @@ func handleExplain(request events.LambdaFunctionURLRequest) (events.LambdaFuncti
 }
 
 func handleGetArXivPapers(request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	// Parse the request body to get the action
-	var requestBody map[string]string
-	err := json.Unmarshal([]byte(request.Body), &requestBody)
-	if err != nil {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 400,
-			Body:       "Invalid request body: " + err.Error(),
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
-	action, exists := requestBody["action"]
-	if !exists || action != "arxiv" {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 400,
-			Body:       "Action field 'arxiv' is required",
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
 	// Call the ArXiv microservice
 	arxivResponse, err := callArXivMicroservice()
 	if err != nil {
@@ -215,8 +203,12 @@ func getCORSHeaders() map[string]string {
 	}
 }
 
-func callLLMMicroservice(text string, level string) (LLMResponse, error) {
-	requestBody, err := json.Marshal(map[string]string{"text": text, "level": level})
+func callLLMMicroservice(text string, level string, generateImages bool) (LLMResponse, error) {
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"text":            text,
+		"level":           level,
+		"generate_images": generateImages,
+	})
 	if err != nil {
 		return LLMResponse{}, fmt.Errorf("error marshaling request: %v", err)
 	}

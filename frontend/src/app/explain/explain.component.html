@@ -44,7 +44,7 @@
         <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="mb-3"></mat-progress-bar>
     </ng-container>
     <!-- Legend panel -->
-    <div *ngIf="explanations.length > 0" class="legend-panel mb-4">
+    <div *ngIf="explanations && explanations.length > 0" class="legend-panel mb-4">
       <div class="legend-content">
         <div class="legend-item">
           <mat-icon>help_outline</mat-icon>
@@ -61,7 +61,7 @@
       </div>
     </div>
     <!-- Explanation -->
-    <div *ngIf="explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
+    <div *ngIf="explanations && explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
       <!-- Gist Card -->
       <mat-card *ngIf="mainTakeaway" class="mb-4">
           <mat-card-header>
@@ -85,6 +85,7 @@
               <mat-card-header>
                 <mat-card-title>{{ concept.concept }}</mat-card-title>
               </mat-card-header>
+              <img *ngIf="concept.image_url" [src]="concept.image_url" alt="{{ concept.concept }}" class="concept-image">
               <mat-card-content>
                 <div class="legend-item">
                   <mat-icon>help_outline</mat-icon>

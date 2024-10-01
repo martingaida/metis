@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export interface Layer {
   what: string;
@@ -11,6 +12,8 @@ export interface Layer {
 export interface Concept {
   concept: string;
   layer: Layer;
+  image_url?: string;
+  image_prompt?: string;
 }
 
 export interface Topic {
@@ -19,10 +22,8 @@ export interface Topic {
 }
 
 export interface ExplanationResponse {
-  explanations: {
-    topics: Topic[];
-    main_takeaway: string;
-  };
+  explanations: Topic[];
+  main_takeaway: string;
 }
 
 export interface ArXivPaper {
@@ -52,16 +53,18 @@ export class ApiService {
   }
 
   getArXivPapers(): Observable<ArXivPaper[]> {
-    const body = { action: 'arxiv' };  // Set the action in the body
-
+    const body = { action: 'arxiv' };
+    
     console.log('Requesting URL:', this.apiUrl, 'with body:', body);
     
     return this.http.post<ArXivPaper[]>(
       this.apiUrl,
-      body,  // Pass the action in the request body
+      body,
       { 
-        headers: this.getHeaders(),  // Set headers (if needed)
+        headers: this.getHeaders(),
       }
+    ).pipe(
+      catchError(this.handleError<ArXivPaper[]>('getArXivPapers', []))
     );
   }
 
@@ -76,6 +79,15 @@ export class ApiService {
       { 
         headers: this.getHeaders(),
       }
+    ).pipe(
+      catchError(this.handleError<ExplanationResponse>('explainText'))
     );
+  }
+
+  private handleError<T>(operation = 'operation', result?: T) {
+    return (error: any): Observable<T> => {
+      console.error(`${operation} failed: ${error.message}`);
+      return of(result as T);
+    };
   }
 }
