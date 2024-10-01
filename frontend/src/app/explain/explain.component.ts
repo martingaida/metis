@@ -206,6 +206,7 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => {
       this.isExplanationVisible = true;
       this.scrollToExplanation();
+      this.loadConceptImages(); // New method to handle image loading
     }, 100);
   }
 
@@ -219,5 +220,9 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
     this.isExplanationVisible = false;
     this.explanations = [];
     this.mainTakeaway = '';
+  }
+
+  private loadConceptImages() {
+    // Implement lazy loading of images here
   }
 }

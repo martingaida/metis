@@ -11,6 +11,7 @@ export interface Layer {
 export interface Concept {
   concept: string;
   layer: Layer;
+  imageUrl?: string;
 }
 
 export interface Topic {

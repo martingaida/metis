@@ -85,6 +85,7 @@
               <mat-card-header>
                 <mat-card-title>{{ concept.concept }}</mat-card-title>
               </mat-card-header>
+              <img *ngIf="concept.imageUrl" [src]="concept.imageUrl" alt="{{ concept.concept }}" class="concept-image">
               <mat-card-content>
                 <div class="legend-item">
                   <mat-icon>help_outline</mat-icon>
