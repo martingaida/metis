@@ -22,6 +22,7 @@ class Layer(BaseModel):
 class Concept(BaseModel):
     concept: str
     layer: Layer
+    image_prompt: str
 
 class Topic(BaseModel):
     topic: str
@@ -30,6 +31,65 @@ class Topic(BaseModel):
 class StructuredExplanation(BaseModel):
     topics: List[Topic]
     main_takeaway: str
+
+
+def generate_image_url(prompt: str) -> str:
+    try:
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+        )
+        return response.data[0].url
+    except Exception as e:
+        print(f"Error generating image: {e}")
+        return ""
+
+
+def generate_image_urls(result: StructuredExplanation) -> StructuredExplanation:
+    updated_topics = []
+    for topic in result.topics:
+        updated_concepts = []
+        for concept in topic.concepts:
+            updated_concept = {
+                'concept': concept.concept,
+                'layer': concept.layer,
+                'image_prompt': concept.image_prompt,
+                'image_url': generate_image_url(concept.image_prompt)
+            }
+            updated_concepts.append(updated_concept)
+        
+        updated_topic = {
+            'topic': topic.topic,
+            'concepts':updated_concepts
+        }
+        updated_topics.append(updated_topic)
+
+    updated_response = {
+        'topics': updated_topics,
+        'main_takeaway': result.main_takeaway
+    }
+
+    return updated_response
+
+
+def generate_response(text: str, level: str, generate_images: bool = True) -> StructuredExplanation:
+    try:
+        start_time = time.time()
+        result = generate_structured_explanation(text, level)
+        
+        # Generate images
+        result = generate_image_urls(result)
+        print(result)
+        
+        total_time = time.time() - start_time
+        print(f'Total function runtime: {total_time:.2f} seconds')
+        return result
+    except Exception as e:
+        print(f"Error in generate_response: {e}")
+        raise
 
 
 def generate_structured_explanation(text, level):
@@ -62,6 +122,7 @@ def generate_structured_explanation(text, level):
     - What: Explain what the concept is, adjusted to the {level} reading level of understanding.
     - Why: Describe why the concept is important or significant, with complexity suitable for the {level} reading level.
     - How: Explain how the concept works or is applied, with detail appropriate for the {level} reading level.
+    - Image Prompt: A brief, clear description for generating an image that represents the concept best suited for the {level} reading level.
 
     Adjust the complexity and depth of each explanation based on the specified reading level using Flesch-Kincaid Scale:
         - K3: kindergarten, ages 5-8, example book "Hooray for Fish!"
@@ -86,7 +147,8 @@ def generate_structured_explanation(text, level):
                             "what": "Explanation of what it is, tailored to the {level} level.",
                             "why": "Explanation of why it's important, tailored to the {level} level.",
                             "how": "Explanation of how it works, tailored to the {level} level."
-                        }}
+                        }},
+                        "image_prompt": "A clear, concise description for generating an educational image best illustrating this concept, tailored to the {level} level."
                     }}
                 ]
             }}
@@ -120,16 +182,6 @@ def generate_structured_explanation(text, level):
     except json.JSONDecodeError as e:
         print(f"JSON parsing error: {e}")
         raise
-    except (IndexError, ValueError) as e:
+    except (IndexError, ValueError, KeyError) as e:
         print(f"Unexpected response structure: {e}")
         raise
-
-def generate_response(text, level):
-    try:
-        start_time = time.time()
-        result = generate_structured_explanation(text, level)
-        total_time = time.time() - start_time
-        print(f'Total function runtime: {total_time:.2f} seconds')
-        return {"explanations": result.model_dump()}
-    except Exception as e:
-        return f"Error: {str(e)}"

@@ -6,11 +6,16 @@ def lambda_handler(event, context):
         try:
             body = json.loads(event['body'])
             text = body.get('text', '')
-            level = body.get('level', 'Basic')  # Default to 'Basic' if not provided
+            level = body.get('level', 'Basic')
+            generate_images = body.get('generate_images', False)
 
-            # Process the text synchronously
-            result = explain.generate_response(text, level)
+            result = explain.generate_response(text, level, generate_images)
 
+            # Convert Layer objects to dictionaries
+            for topic in result['topics']:
+                for concept in topic['concepts']:
+                    concept['layer'] = concept['layer'].__dict__
+                    
             return {
                 'statusCode': 200,
                 'body': json.dumps(result)

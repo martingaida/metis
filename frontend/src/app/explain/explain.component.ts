@@ -1,10 +1,9 @@
-import { ApiService, Topic, Concept, Layer, ArXivPaper } from '../services/api.service';
+import { ApiService, ExplanationResponse, ArXivPaper, Topic } from '../services/api.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Component, ViewChild, ElementRef, OnInit, OnChanges, SimpleChanges, Input, OnDestroy } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { ExplanationResponse } from '../services/api.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -106,15 +105,18 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
   fetchArXivPapers(retriesLeft: number) {
     this.apiService.getArXivPapers().pipe(takeUntil(this.destroy$)).subscribe(
       (papers) => {
+        console.log('Received arXiv papers:', papers);
         this.arXivPapers = papers;
         this.isLoadingArXiv = false;
       },
       (error) => {
         console.error('Error fetching arXiv papers:', error);
         if (retriesLeft > 0) {
+          console.log(`Retrying... ${retriesLeft} attempts left`);
           setTimeout(() => this.fetchArXivPapers(retriesLeft - 1), 2000);
         } else {
           this.isLoadingArXiv = false;
+          this.errorMessage = 'Failed to load arXiv papers. Please try again later.';
         }
       }
     );
@@ -200,13 +202,13 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private updateExplanationDisplay(explanation: ExplanationResponse) {
-    this.explanations = explanation.explanations.topics;
-    this.mainTakeaway = explanation.explanations.main_takeaway;
+    this.explanations = explanation.explanations;
+    this.mainTakeaway = explanation.main_takeaway;
     this.isLoading = false;
     setTimeout(() => {
       this.isExplanationVisible = true;
       this.scrollToExplanation();
-      this.loadConceptImages(); // New method to handle image loading
+      this.loadConceptImages();
     }, 100);
   }
 
