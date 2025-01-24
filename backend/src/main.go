@@ -61,43 +61,42 @@ type ArXivPaper struct {
 func handleRequest(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	log.Printf("Received request: Method=%s, Path=%s, Body=%s", request.RequestContext.HTTP.Method, request.RequestContext.HTTP.Path, request.Body)
 
+	// 1. Handle preflight OPTIONS
 	if request.RequestContext.HTTP.Method == "OPTIONS" {
-		return handleOptions()
+		return events.LambdaFunctionURLResponse{
+			StatusCode: 204,
+			Headers:    getCORSHeaders(),
+			Body:       "",
+		}, nil
 	}
 
-	// Parse request body
-	var requestBody map[string]string
-	err := json.Unmarshal([]byte(request.Body), &requestBody)
+	// 2. Parse the request normally:
+	//    e.g. if action == 'arxiv', call handleGetArXivPapers()
+	//    if action == 'explain', call handleExplain()
+
+	// Pseudocode example:
+	body := request.Body
+	var payload map[string]string
+	err := json.Unmarshal([]byte(body), &payload)
 	if err != nil {
-		log.Printf("Error parsing request body: %v", err)
 		return events.LambdaFunctionURLResponse{
 			StatusCode: 400,
-			Body:       "Invalid request body",
 			Headers:    getCORSHeaders(),
+			Body:       "Invalid JSON in the request body",
 		}, nil
 	}
 
-	// Get the action from the body
-	action, exists := requestBody["action"]
-	if !exists || action == "" {
-		return events.LambdaFunctionURLResponse{
-			StatusCode: 400,
-			Body:       "Action field is required",
-			Headers:    getCORSHeaders(),
-		}, nil
-	}
-
-	// Handle the action
+	action := payload["action"]
 	switch action {
-	case "explain":
-		return handleExplain(request)
 	case "arxiv":
 		return handleGetArXivPapers(request)
+	case "explain":
+		return handleExplain(request)
 	default:
 		return events.LambdaFunctionURLResponse{
-			StatusCode: 404,
-			Body:       "Action not recognized",
+			StatusCode: 400,
 			Headers:    getCORSHeaders(),
+			Body:       "Unknown action",
 		}, nil
 	}
 }
@@ -188,18 +187,11 @@ func handleGetArXivPapers(request events.LambdaFunctionURLRequest) (events.Lambd
 	}, nil
 }
 
-func handleOptions() (events.LambdaFunctionURLResponse, error) {
-	return events.LambdaFunctionURLResponse{
-		StatusCode: 200,
-		Headers:    getCORSHeaders(),
-	}, nil
-}
-
 func getCORSHeaders() map[string]string {
 	return map[string]string{
-		"Access-Control-Allow-Origin":  "*",
-		"Access-Control-Allow-Methods": "POST, OPTIONS",
-		"Access-Control-Allow-Headers": "Content-Type",
+		"Access-Control-Allow-Origin":  "http://metis-frontend-ue7r654io.s3-website-us-east-1.amazonaws.com",
+		"Access-Control-Allow-Methods": "GET, POST",
+		"Access-Control-Allow-Headers": "Content-Type, Origin, Accept",
 	}
 }
 

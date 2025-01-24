@@ -1,15 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  metis-backend
+Description: 'metis-backend
 
   Sample SAM Template for metis-backend
 
+  '
 Globals:
   Function:
     Timeout: 900
     MemorySize: 128
-
 Parameters:
   LLMServiceUrl:
     Type: String
@@ -17,48 +16,62 @@ Parameters:
   ArXivServiceUrl:
     Type: String
     Description: The URL of the arXiv service
-
 Resources:
   BackendFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: .
+      CodeUri: s3://metis-backend-w8ej736hj9/0675b2f2083108c0730c7f1bd1ffd85c
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
-        - x86_64
+      - x86_64
       Environment:
         Variables:
-          LLM_MICROSERVICE_URL: !Ref LLMServiceUrl
-          ARXIV_MICROSERVICE_URL: !Ref ArXivServiceUrl
-
+          LLM_MICROSERVICE_URL:
+            Ref: LLMServiceUrl
+          ARXIV_MICROSERVICE_URL:
+            Ref: ArXivServiceUrl
+    Metadata:
+      SamResourceId: BackendFunction
   BackendFunctionUrl:
     Type: AWS::Lambda::Url
     Properties:
       AuthType: NONE
-      TargetFunctionArn: !GetAtt BackendFunction.Arn
+      TargetFunctionArn:
+        Fn::GetAtt:
+        - BackendFunction
+        - Arn
       Cors:
         AllowCredentials: false
         AllowHeaders:
-          - "*"
+        - '*'
         AllowMethods:
-          - GET
-          - POST
+        - GET
+        - POST
         AllowOrigins:
-          - "http://metis-frontend-ue7r654io.s3-website-us-east-1.amazonaws.com"
-
+        - http://metis-frontend-ue7r654io.s3-website-us-east-1.amazonaws.com
+    Metadata:
+      SamResourceId: BackendFunctionUrl
   BackendFunctionUrlPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref BackendFunction
+      FunctionName:
+        Ref: BackendFunction
       Action: lambda:InvokeFunctionUrl
-      Principal: "*"
+      Principal: '*'
       FunctionUrlAuthType: NONE
-
+    Metadata:
+      SamResourceId: BackendFunctionUrlPermission
 Outputs:
   BackendFunction:
-    Description: "Backend Lambda Function ARN"
-    Value: !GetAtt BackendFunction.Arn
+    Description: Backend Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - BackendFunction
+      - Arn
   BackendFunctionUrl:
-    Description: "Backend Function URL"
-    Value: !GetAtt BackendFunctionUrl.FunctionUrl
+    Description: Backend Function URL
+    Value:
+      Fn::GetAtt:
+      - BackendFunctionUrl
+      - FunctionUrl
