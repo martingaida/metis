@@ -6,6 +6,9 @@
 
 PleX (short for "Please Explain") is an innovative application designed to explain complex subjects by adapting explanations to different reading levels. The system works by:
 
+Try it out: [http://metis-frontend-ue7r654io.s3-website-us-east-1.amazonaws.com/](http://metis-frontend-ue7r654io.s3-website-us-east-1.amazonaws.com/)
+
+
 1. Analyzing the input text or topic
 2. Breaking down the subject into key concepts
 3. Explaining each concept at the user's chosen reading level, based on the Flesch-Kincaid Scale:
