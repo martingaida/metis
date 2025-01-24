@@ -198,7 +198,7 @@ func handleOptions() (events.LambdaFunctionURLResponse, error) {
 func getCORSHeaders() map[string]string {
 	return map[string]string{
 		"Access-Control-Allow-Origin":  "*",
-		"Access-Control-Allow-Methods": "POST, OPTIONS",
+		"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 		"Access-Control-Allow-Headers": "Content-Type",
 	}
 }

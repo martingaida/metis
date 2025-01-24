@@ -124,6 +124,10 @@ deploy_backend() {
         export $(grep -v '^#' .env | xargs)
     fi
 
+    # Debug: Print environment variables
+    echo "LLM_MICROSERVICE_URL: $LLM_MICROSERVICE_URL"
+    echo "ARXIV_MICROSERVICE_URL: $ARXIV_MICROSERVICE_URL"
+
     # Check if LLM_MICROSERVICE_URL is set
     if [ -z "$LLM_MICROSERVICE_URL" ]; then
         echo "Error: LLM_MICROSERVICE_URL is not set in .env file"
@@ -153,7 +157,7 @@ deploy_backend() {
         exit 1
     fi
 
-    sam deploy --template-file packaged.yaml --stack-name metis-backend --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides LLMServiceUrl=$LLM_MICROSERVICE_URL
+    sam deploy --template-file packaged.yaml --stack-name metis-backend --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides LLMServiceUrl=$LLM_MICROSERVICE_URL ArXivServiceUrl=$ARXIV_MICROSERVICE_URL
     if [ $? -ne 0 ]; then
         echo "Error: SAM deploy failed"
         exit 1
