@@ -7,12 +7,46 @@ import os
 
 class ArXivClient:
     def __init__(self):
-        self.cache_path = os.path.join(os.path.dirname(__file__), 'arxiv_papers.json')
+        # Get the directory where this file is located
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.cache_file = os.path.join(current_dir, 'arxiv_papers.json')
         self.categories = [
             'astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 
             'hep-ph', 'hep-th', 'math-ph', 'nlin', 'nucl-ex', 
             'nucl-th', 'physics', 'quant-ph', 'math', 'cs'
         ]
+
+    def get_random_papers(self, num_categories=3, papers_per_category=1):
+        """Load papers directly from cache file"""
+        try:
+            with open(self.cache_file, 'r') as f:
+                cached_papers = json.load(f)
+                
+            # Convert the cached data into the expected format
+            papers = []
+            for paper in cached_papers:
+                formatted_paper = {
+                    'id': paper.get('id', ''),
+                    'title': paper.get('title', ''),
+                    'abstract': paper.get('abstract', ''),
+                    'category': paper.get('category', ''),
+                    'authors': paper.get('authors', ''),
+                    'published': paper.get('published', ''),
+                    'abstract_url': paper.get('abstract_url', ''),
+                    'pdf_url': paper.get('pdf_url', '')
+                }
+                papers.append(formatted_paper)
+            
+            # Randomly select papers
+            if papers:
+                selected_papers = random.sample(papers, min(num_categories * papers_per_category, len(papers)))
+                return selected_papers
+            else:
+                return []
+                
+        except Exception as e:
+            print(f"Error loading cached papers: {str(e)}")
+            return []
 
     def get_random_papers_cache(self, cache_path, num_papers=3):
         with open(cache_path, 'r') as f:
@@ -26,12 +60,11 @@ class ArXivClient:
 
         return selected_papers
 
-    def get_random_papers(self, num_categories=4, papers_per_category=1):
-
-        if os.path.exists(self.cache_path):
+    def get_random_papers_from_arxiv(self, num_categories=4, papers_per_category=1):
+        if os.path.exists(self.cache_file):
             print('Loading papers from cache...')
             time.sleep(1)
-            return self.get_random_papers_cache(self.cache_path, 3)
+            return self.get_random_papers_cache(self.cache_file, 3)
         
         print('Cache not found. Fetching from arXiv...')
         selected_categories = random.sample(self.categories, num_categories)

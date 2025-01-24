@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Load environment variables from .env file
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
 # Check if AWS CLI is configured with valid credentials
 check_aws_credentials() {
     if ! aws sts get-caller-identity &> /dev/null; then
@@ -118,10 +123,9 @@ deploy_backend() {
     echo "Deploying backend..."
     cd backend
 
-    # Check for .env file and source it if it exists
+    # Load environment variables from .env file
     if [ -f .env ]; then
-        echo "Found .env file. Loading environment variables..."
-        export $(grep -v '^#' .env | xargs)
+        export $(cat .env | xargs)
     fi
 
     # Check if LLM_MICROSERVICE_URL is set
@@ -153,7 +157,11 @@ deploy_backend() {
         exit 1
     fi
 
-    sam deploy --template-file packaged.yaml --stack-name metis-backend --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides LLMServiceUrl=$LLM_MICROSERVICE_URL
+    # Debugging output
+    echo "LLM_MICROSERVICE_URL: $LLM_MICROSERVICE_URL"
+    echo "ARXIV_MICROSERVICE_URL: $ARXIV_MICROSERVICE_URL"
+
+    sam deploy --template-file packaged.yaml --stack-name metis-backend --capabilities CAPABILITY_IAM --region us-east-1 --no-confirm-changeset --parameter-overrides LLMServiceUrl=$LLM_MICROSERVICE_URL ArXivServiceUrl=$ARXIV_MICROSERVICE_URL
     if [ $? -ne 0 ]; then
         echo "Error: SAM deploy failed"
         exit 1

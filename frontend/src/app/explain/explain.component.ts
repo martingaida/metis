@@ -12,8 +12,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil, catchError, finalize } from 'rxjs/operators';
+import { takeUntil, catchError, finalize, map } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-explain',
@@ -60,6 +61,8 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
   currentPaperPdfUrl: string | null = null;
   private destroy$ = new Subject<void>();
   errorMessage: string | null = null;
+  currentExplanation: ExplanationResponse | null = null;
+  error: string | null = null;
 
   levels: { value: string, viewValue: string }[] = [
     { value: 'Basic', viewValue: 'K3' },
@@ -103,9 +106,19 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   fetchArXivPapers(retriesLeft: number) {
-    this.apiService.getArXivPapers().pipe(takeUntil(this.destroy$)).subscribe(
+    this.apiService.getArXivPapers().pipe(
+      map(response => {
+        // If response is not an array, return empty array
+        if (!Array.isArray(response)) {
+          console.warn('Received invalid arXiv papers format:', response);
+          return [];
+        }
+        return response;
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(
       (papers) => {
-        console.log('Received arXiv papers:', papers);
+        console.log('Processed arXiv papers:', papers);
         this.arXivPapers = papers;
         this.isLoadingArXiv = false;
       },
@@ -150,34 +163,47 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  private checkOrFetchExplanation(key: string, fetchCallback: () => any, cache: { [key: string]: { [level: string]: ExplanationResponse } }) {
+  private checkOrFetchExplanation(key: string, fetchFn: () => Observable<ExplanationResponse>, cache: { [key: string]: { [level: string]: ExplanationResponse } }) {
+    this.isLoading = true;
+    this.error = null;
+    this.currentExplanation = null;
+
     if (cache[key] && cache[key][this.selectedLevel]) {
-      const savedExplanation = cache[key][this.selectedLevel];
-      this.updateExplanationDisplay(savedExplanation);
-    } else {
-      this.isLoading = true;
-      this.isExplanationVisible = false;
-      this.errorMessage = null;
-      fetchCallback().pipe(
-        catchError(error => {
-          this.errorMessage = 'An error occurred while fetching the explanation. Please try again.';
-          console.error('Error fetching explanation:', error);
-          return of(null);
-        }),
-        finalize(() => this.isLoading = false),
-        takeUntil(this.destroy$)
-      ).subscribe(
-        (response: ExplanationResponse | null) => {
-          if (response) {
-            if (!cache[key]) {
-              cache[key] = {};
-            }
-            cache[key][this.selectedLevel] = response;
-            this.updateExplanationDisplay(response);
-          }
-        }
-      );
+      this.processExplanationResponse(cache[key][this.selectedLevel]);
+      this.isLoading = false;
+      return;
     }
+
+    fetchFn().pipe(takeUntil(this.destroy$)).subscribe(
+      (response) => {
+        console.log('Received explanation:', response);
+        if (response && response.explanation) {
+          if (!cache[key]) {
+            cache[key] = {};
+          }
+          cache[key][this.selectedLevel] = response;
+          this.processExplanationResponse(response);
+        } else {
+          this.error = 'Received invalid explanation format';
+          console.error('Invalid explanation format:', response);
+        }
+        this.isLoading = false;
+      },
+      (error) => {
+        console.error('Error fetching explanation:', error);
+        this.error = 'Failed to fetch explanation';
+        this.isLoading = false;
+      }
+    );
+  }
+
+  private processExplanationResponse(response: ExplanationResponse) {
+    this.explanations = response.explanation.topics;
+    this.mainTakeaway = response.explanation.main_takeaway;
+    this.isExplanationVisible = true;
+    setTimeout(() => {
+      this.scrollToExplanation();
+    }, 100);
   }
 
   isPaperExplained(paperId: string): boolean {
@@ -202,8 +228,8 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private updateExplanationDisplay(explanation: ExplanationResponse) {
-    this.explanations = explanation.explanations;
-    this.mainTakeaway = explanation.main_takeaway;
+    this.explanations = explanation.explanation.topics;
+    this.mainTakeaway = explanation.explanation.main_takeaway;
     this.isLoading = false;
     setTimeout(() => {
       this.isExplanationVisible = true;
@@ -226,5 +252,18 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
 
   private loadConceptImages() {
     // Implement lazy loading of images here
+  }
+
+  processExplanation(response: ExplanationResponse): boolean {
+    if (!response.explanation) {
+      return false;
+    }
+    
+    const { topics, main_takeaway } = response.explanation;
+    if (topics && main_takeaway) {
+      // ... rest of the processing logic ...
+      return true;
+    }
+    return false;
   }
 }
