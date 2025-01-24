@@ -17,8 +17,10 @@ export interface Concept {
 }
 
 export interface Topic {
-  title: string;
-  content: string;
+  topic: string;
+  concepts: Concept[];
+  title?: string;
+  content?: string;
   subtopics?: Topic[];
 }
 

@@ -169,7 +169,7 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
     this.currentExplanation = null;
 
     if (cache[key] && cache[key][this.selectedLevel]) {
-      this.currentExplanation = cache[key][this.selectedLevel];
+      this.processExplanationResponse(cache[key][this.selectedLevel]);
       this.isLoading = false;
       return;
     }
@@ -182,7 +182,7 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
             cache[key] = {};
           }
           cache[key][this.selectedLevel] = response;
-          this.currentExplanation = response;
+          this.processExplanationResponse(response);
         } else {
           this.error = 'Received invalid explanation format';
           console.error('Invalid explanation format:', response);
@@ -195,6 +195,15 @@ export class ExplainComponent implements OnInit, OnChanges, OnDestroy {
         this.isLoading = false;
       }
     );
+  }
+
+  private processExplanationResponse(response: ExplanationResponse) {
+    this.explanations = response.explanation.topics;
+    this.mainTakeaway = response.explanation.main_takeaway;
+    this.isExplanationVisible = true;
+    setTimeout(() => {
+      this.scrollToExplanation();
+    }, 100);
   }
 
   isPaperExplained(paperId: string): boolean {

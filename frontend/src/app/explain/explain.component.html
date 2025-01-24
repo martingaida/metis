@@ -60,39 +60,56 @@
         </div>
       </div>
     </div>
-    <!-- Add error message display -->
-    <div *ngIf="error" class="error-message">
-      {{ error }}
-    </div>
-
-    <!-- Debug output -->
-    <pre *ngIf="currentExplanation">
-      {{ currentExplanation | json }}
-    </pre>
-
-    <!-- Main explanation rendering -->
-    <div *ngIf="currentExplanation?.explanation" class="explanation-container" [@fadeIn]>
-      <!-- Main takeaway -->
-      <div *ngIf="currentExplanation?.explanation?.main_takeaway" class="main-takeaway">
-        <h3>Main Takeaway</h3>
-        <p>{{ currentExplanation?.explanation?.main_takeaway }}</p>
-      </div>
-
-      <!-- Topics -->
-      <div *ngIf="currentExplanation?.explanation?.topics?.length" class="topics-container">
-        <div *ngFor="let topic of currentExplanation?.explanation?.topics" class="topic">
-          <h4>{{ topic.title }}</h4>
-          <p>{{ topic.content }}</p>
-          
-          <!-- Subtopics if they exist -->
-          <div *ngIf="topic.subtopics?.length" class="subtopics">
-            <div *ngFor="let subtopic of topic.subtopics" class="subtopic">
-              <h5>{{ subtopic.title }}</h5>
-              <p>{{ subtopic.content }}</p>
-            </div>
+    <!-- Explanation -->
+    <div *ngIf="explanations && explanations.length > 0" class="explanation-container" [class.visible]="isExplanationVisible" #explanationContainer>
+      <!-- Gist Card -->
+      <mat-card *ngIf="mainTakeaway" class="mb-4">
+          <mat-card-header>
+              <mat-card-title>
+                {{ currentPaperTitle || 'Key Takeaway' }}
+              </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+              <p>{{ mainTakeaway }}</p>
+          </mat-card-content>
+          <a *ngIf="currentPaperPdfUrl && mode === 'arXiv'" [href]="currentPaperPdfUrl" target="_blank" rel="noopener noreferrer" class="pdf-link">
+            View PDF
+          </a>
+      </mat-card>
+      <!-- Breakdown -->
+      <div class="explanation-breakdown">
+        <ng-container *ngFor="let topic of explanations; let last = last">
+          <h2 class="topic-title">{{ topic.topic }}</h2>
+          <div class="concept-list">
+            <mat-card *ngFor="let concept of topic.concepts" class="mb-3">
+              <mat-card-header>
+                <mat-card-title>{{ concept.concept }}</mat-card-title>
+              </mat-card-header>
+              <img *ngIf="concept.image_url" [src]="concept.image_url" alt="{{ concept.concept }}" class="concept-image">
+              <mat-card-content>
+                <div class="legend-item">
+                  <mat-icon>help_outline</mat-icon>
+                  <div class="concept-text">
+                    <p>{{ concept.layer.what }}</p>
+                  </div>
+                </div>
+                <div class="legend-item">
+                  <mat-icon>lightbulb_outline</mat-icon>
+                  <div class="concept-text">
+                    <p>{{ concept.layer.why }}</p>
+                  </div>
+                </div>
+                <div class="legend-item">
+                  <mat-icon>settings</mat-icon>
+                  <div class="concept-text">
+                    <p>{{ concept.layer.how }}</p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
           </div>
-        </div>
+        </ng-container>
       </div>
-    </div>
+      </div>
   </div>
 </div>
